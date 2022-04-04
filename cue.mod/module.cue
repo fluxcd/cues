@@ -1,1 +1,1 @@
-module: ""
+module: "github.com/fluxcd/cues"
