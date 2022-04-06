@@ -80,7 +80,7 @@ export GITHUB_TOKEN=my-gh-personal-access-token
 export SLACK_TOKEN=my-slack-bot-token
 
 cue -t staging \
-  -t out=./out \
+  -t out=./out/staging \
   -t gitToken=${GITHUB_TOKEN} \
   -t slackToken=${SLACK_TOKEN} \
   build ./generators/tenants/
@@ -90,18 +90,19 @@ The above command generates the following structure:
 
 ```text
 ./out/
-├── dev-team
-│   ├── resources.yaml
-│   └── secrets.yaml
-└── ops-team
-    ├── resources.yaml
-    └── secrets.yaml
+└── staging
+    ├── dev-team
+    │   ├── resources.yaml
+    │   └── secrets.yaml
+    └── ops-team
+        ├── resources.yaml
+        └── secrets.yaml
 ```
 
 To list all the Kubernetes objects, run the `ls` command:
 
 ```console
-$ cue -t staging -t out=./out -t gitToken=${GITHUB_TOKEN} -t slackToken=${SLACK_TOKEN} ls ./generators/tenants/
+$ cue -t staging -t gitToken=${GITHUB_TOKEN} -t slackToken=${SLACK_TOKEN} ls ./generators/tenants/
 TENANT    RESOURCE                                API VERSION
 dev-team  Namespace/dev-apps                      v1
 dev-team  ServiceAccount/dev-apps/flux-dev-team   v1
@@ -129,8 +130,13 @@ To encrypt the Kubernetes secrets on disk using SOPS, run the `build` command wi
 export SOPS_AGE_RECIPIENTS=age10uk5fkvfld6v3ep53me5npz6zz9fqwfs2l8dvv5m29pmalnaefsssslkw4
 
 cue -t staging \
-  -t out=./out \
+  -t out=./out/staging \
   -t gitToken=${GITHUB_TOKEN} \
   -t slackToken=${SLACK_TOKEN} \
   build ./generators/tenants/
 ```
+
+The generated manifests can be pushed to the Git repository where you've run `flux bootstrap`
+under the `clusters/staging` directory. Note that Flux must be configured to
+[decrypt the secrets](https://fluxcd.io/docs/components/kustomize/kustomization/#secrets-decryption)
+if you're using SOPS.
