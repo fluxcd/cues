@@ -34,9 +34,11 @@ git clone https://github.com/fluxcd/cues.git
 cd cues
 ```
 
-### Run the tenants examples
+### Define tenants
 
-The tenant generator is intended to help cluster admins to onboard tenants, it's an alternative to the 
+The [tenant](pkg/tenant) package is intended to help cluster admins define tenants with CUE.
+
+The [tenants](generators/tenants) generator is an alternative to the 
 procedure described in [fluxcd/flux2-multi-tenancy](https://github.com/fluxcd/flux2-multi-tenancy#onboard-new-tenants).
 
 In the `generators/tenants/tenants.cue` file you can find an example of how to define Flux tenants:
@@ -73,7 +75,9 @@ devTeam: #DevTeam & {
 }
 ```
 
-To generate the Kubernetes manifests for on disk, run the `build` command:
+### Generate tenants
+
+To generate the Kubernetes manifests on disk, run the `build` command:
 
 ```shell
 export GITHUB_TOKEN=my-gh-personal-access-token
@@ -133,6 +137,7 @@ cue -t staging \
   -t out=./out/staging \
   -t gitToken=${GITHUB_TOKEN} \
   -t slackToken=${SLACK_TOKEN} \
+  -t encrypt=sops \
   build ./generators/tenants/
 ```
 
