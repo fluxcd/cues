@@ -112,11 +112,3 @@ command: ls: {
 		])
 	}
 }
-
-// The dryrun command applies the Kubernetes resources of all tenants on the cluster using client-side dry run.
-command: dryrun: {
-	task: kubectl: exec.Run & {
-		stdin: yaml.MarshalStream([ for r in resources {r}])
-		cmd: [ "kubectl", "apply", "--dry-run=client", "-f-"]
-	}
-}

@@ -4,53 +4,45 @@ import (
 	"github.com/fluxcd/cues/pkg/tenant"
 )
 
-// Secret tokens set at runtime from env vars or files
-_secrets: {
-	GITHUB_TOKEN: *"" | string @tag(gitToken)
-	SLACK_TOKEN:  *"" | string @tag(slackToken)
+// Environment defines the destination cluster
+env: *"" | string @tag(env,short=staging|production)
+
+// Secret tokens can be set at runtime from env vars or files
+secrets: {
+	gitToken:   *"" | string @tag(gitToken)
+	slackToken: *"" | string @tag(slackToken)
 }
 
-// Dev team definition
-devs: tenant.#Tenant & {
+// Tenants holds the list of tenants per env
+tenants: [...tenant.#Tenant]
+
+// Dev team base definition
+#DevTeam: tenant.#Tenant & {
 	spec: {
 		name:      "dev-team"
 		namespace: "dev-apps"
 		role:      "namespace-admin"
 		git: {
-			token:    _secrets.GITHUB_TOKEN
-			url:      "https://github.com/stefanprodan/podinfo"
-			branch:   "master"
-			path:     "kustomize"
-			interval: 5
+			token:    secrets.gitToken
+			url:      "https://github.com/org/kube-dev-team"
+			branch:   "main"
+			interval: 2
 		}
-		slack: {
-			token:   _secrets.SLACK_TOKEN
-			channel: "general"
-			cluster: "dev-eu-central-1"
-		}
+		slack: token: secrets.slackToken
 	}
 }
 
-// Platform team definition
-ops: tenant.#Tenant & {
+// Ops team base definition
+#OpsTeam: tenant.#Tenant & {
 	spec: {
 		name:      "ops-team"
 		namespace: "ops-apps"
 		role:      "cluster-admin"
 		git: {
-			url:      "https://github.com/stefanprodan/podinfo"
-			branch:   "master"
-			path:     "kustomize"
+			url:      "https://github.com/org/kube-ops-team"
+			branch:   "main"
 			interval: 5
 		}
-		slack: {
-			token:   _secrets.SLACK_TOKEN
-			channel: "ops-alerts"
-			cluster: "dev-eu-central-1"
-		}
+		slack: token: secrets.slackToken
 	}
 }
-
-// Add all tenants to the list
-tenants: [...tenant.#Tenant]
-tenants: [devs, ops]
