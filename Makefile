@@ -7,9 +7,13 @@ all: vet fmt
 
 vet:
 	@cue vet ./... -c
+	@cue vet ./pkg/... -c
+	@cue vet ./generators/... -c
 
 fmt:
 	@cue fmt ./...
+	@cue fmt ./pkg/...
+	@cue fmt ./generators/...
 
 mod:
 	go get -u k8s.io/api/...
