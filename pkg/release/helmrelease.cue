@@ -56,6 +56,7 @@ import (
 		labels:      _spec.labels
 		annotations: _spec.annotations
 	}
+	immutable: true
 	data: {
 		"values.yaml": _values_yaml
 	}
@@ -73,6 +74,7 @@ import (
 		labels:      _spec.labels
 		annotations: _spec.annotations
 	}
+	immutable: true
 	stringData: {
 		"values.yaml": _values_yaml
 	}

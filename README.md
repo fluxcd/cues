@@ -6,18 +6,17 @@
 A collection of [CUE](https://cuelang.org) packages and tools for generating [Flux](https://fluxcd.io) configurations.
 
 This project is for Flux users who want to reduce the Kubernetes boilerplate when configuring delivery pipelines across
-environments and teams. Instead of working with Kubernetes YAML, you will build abstractions with CUE, encode good
-practices and validation to simply complex tasks such as creating a new environment, onboard teams, drive workload
+environments. Instead of working with Kubernetes YAML, you will build abstractions with CUE, encode good
+practices and validation to simplify complex tasks such as creating a new environment, onboard teams, drive workload
 promotion and ultimately reduce toil.
 
 ## Project structure
 
-- In [fluxcd/cues/pkg](pkg) are CUE packages that offer a high-level abstraction layer on top of Kubernetes and Flux APIs.
-- In [fluxcd/cues/generators](generators) are CUE tools for generating, validating and encrypting Kubernetes manifests.
+In [fluxcd/cues/pkg](pkg) are CUE packages that offer a high-level abstraction layer on top of Kubernetes and Flux APIs.
 
-To use the CUE generators, you'll need the following tools installed on your dev machine:
+In [fluxcd/cues/generators](generators) are CUE tools for generating, validating and encrypting Kubernetes manifests.
+To run the generators, you'll need the following tools:
 
-- Git >= 2.34.0
 - Go >= 1.17.0
 - CUE >= 0.4.3
 - SOPS >= 3.7.0
@@ -26,7 +25,7 @@ To use the CUE generators, you'll need the following tools installed on your dev
 On macOS or Linux you can install the prerequisites with Homebrew:
 
 ```shell
-brew install git go cue sops fluxcd/tap/flux
+brew install go cue sops fluxcd/tap/flux
 ```
 
 ## Abstractions
@@ -65,7 +64,7 @@ Flux Git repositories, kustomizations, notification providers and alerts.
 
 To get started with the tenants generator please see this [guide](generators/tenants/README.md).
 
-### Releases
+### Release
 
 The [release](pkg/tenant) CUE package is an abstraction built on top of Helm and Flux
 with the goal of simplifying the delivery of applications across environments.
@@ -88,11 +87,7 @@ awesomeApp: release.#Release & {
 		}
 		// These values are stored in an immutable ConfigMap.
 		values: {
-			hpa: {
-				enabled:     true
-				maxReplicas: 10
-				cpu:         99
-			}
+			hpa: maxReplicas: 10
 			resources: {
 				limits: memory: "512Mi"
 				requests: memory: "32Mi"
