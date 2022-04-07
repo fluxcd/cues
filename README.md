@@ -3,13 +3,19 @@
 [![build](https://github.com/fluxcd/cues/workflows/build/badge.svg)](https://github.com/fluxcd/cues/actions)
 [![license](https://img.shields.io/github/license/fluxcd/cues.svg)](https://github.com/fluxcd/cues/blob/main/LICENSE)
 
-A collection of [CUE](https://cuelang.org) packages for generating [Flux](https://fluxcd.io) configurations.
+A collection of [CUE](https://cuelang.org) packages and tools for generating [Flux](https://fluxcd.io) configurations.
 
-## Get started
+This project is for Flux users who want to reduce the Kubernetes boilerplate when configuring delivery pipelines across
+environments and teams. Instead of working with Kubernetes YAML, you will build abstractions with CUE, encode good
+practices and validation to simply complex tasks such as creating a new environment, onboard teams, drive workload
+promotion and ultimately reduce toil.
 
-### Install prerequisites
+## Project structure
 
-To use the CUE generators for Flux, you'll need the following tools installed on your dev machine:
+- In [fluxcd/cues/pkg](pkg) are CUE packages that offer a high-level abstraction layer on top of Kubernetes and Flux APIs.
+- In [fluxcd/cues/generators](generators) are CUE tools for generating, validating and encrypting Kubernetes manifests.
+
+To use the CUE generators, you'll need the following tools installed on your dev machine:
 
 - Git >= 2.34.0
 - Go >= 1.17.0
@@ -23,125 +29,82 @@ On macOS or Linux you can install the prerequisites with Homebrew:
 brew install git go cue sops fluxcd/tap/flux
 ```
 
-### Clone the cues repo
+## Abstractions
 
-Clone the [fluxcd/cues](https://github.com/fluxcd/cues) repository locally:
+### Tenant
 
-```shell
-mkdir -p ~/go/src/github.com/fluxcd
-cd ~/go/src/github.com/fluxcd
-git clone https://github.com/fluxcd/cues.git
-cd cues
-```
+The [tenant](pkg/tenant) CUE package is an abstraction built on top of Kubernetes RBAC and Flux account impersonation
+with the goal of simplifying the onboard procedure of teams and their workloads onto Kubernetes clusters.
 
-### Define tenants
-
-The [tenant](pkg/tenant) package is intended to help cluster admins define tenants with CUE.
-
-The [tenants](generators/tenants) generator is an alternative to the 
-procedure described in [fluxcd/flux2-multi-tenancy](https://github.com/fluxcd/flux2-multi-tenancy#onboard-new-tenants).
-
-In the `generators/tenants/tenants.cue` file you can find an example of how to define Flux tenants:
+Example definition:
 
 ```cue
-#DevTeam: tenant.#Tenant & {
+awesomeTeam: tenant.#Tenant & {
 	spec: {
-		name:      "dev-team"
-		namespace: "dev-apps"
+		name:      "awesome-team"
+		namespace: "awesome-apps"
 		role:      "namespace-admin"
 		git: {
-			token:    secrets.gitToken
-			url:      "https://github.com/org/kube-dev-team"
-			branch:   "main"
-			interval: 2
+			token:  secrets.gitToken
+			url:    "https://github.com/org/kube-awesome-team"
+			branch: "main"
+			path:   "./deploy/releases"
 		}
-		slack: token: secrets.slackToken
+		slack: {
+			token:   secrets.slackToken
+			channel: "awesome-alerts"
+			cluster: "prod-eu-central-1"
+		}
 	}
 }
 ```
 
-In the `generators/tenants/tenants.staging.cue` file you can find an example of how to set the cluster name for altering
-and the path that's being reconciled by Flux on the staging cluster:
+The [tenants generator](generators/tenants) can be used by platform admins to generate the Kubernetes YAML
+manifests needed by Flux for tenants onboarding, such as: namespaces, service accounts, role bindings, secrets,
+Flux Git repositories, kustomizations, notification providers and alerts.
+
+To get started with the tenants generator please see this [guide](generators/tenants/README.md).
+
+### Releases
+
+The [release](pkg/tenant) CUE package is an abstraction built on top of Helm and Flux
+with the goal of simplifying the delivery of applications across environments.
+
+Example definition:
 
 ```cue
-devTeam: #DevTeam & {
+awesomeApp: release.#Release & {
 	spec: {
-		git: path: "./deploy/staging"
-		slack: {
-			channel: "dev-alerts"
-			cluster: _cluster.name
+		name:      "awesome-app"
+		namespace: "apps"
+		repository: {
+			url:      "https://org.github.io/charts"
+			user:     secrets.helmUser
+			password: secrets.helmPassword
+		}
+		chart: {
+			name: "app"
+			version: "1.2.x"
+		}
+		// These values are stored in an immutable ConfigMap.
+		values: {
+			hpa: {
+				enabled:     true
+				maxReplicas: 10
+				cpu:         99
+			}
+			resources: {
+				limits: memory: "512Mi"
+				requests: memory: "32Mi"
+			}
+		}
+		// These values are stored in an immutable Secret encrypted with SOPS.
+		secretValues: {
+			redis: password: secrets.redisPassword
 		}
 	}
 }
 ```
 
-### Generate tenants
-
-To generate the Kubernetes manifests on disk, run the `build` command:
-
-```shell
-export GITHUB_TOKEN=my-gh-personal-access-token
-export SLACK_TOKEN=my-slack-bot-token
-
-cue -t staging \
-  -t out=./out/staging \
-  -t gitToken=${GITHUB_TOKEN} \
-  -t slackToken=${SLACK_TOKEN} \
-  build ./generators/tenants/
-```
-
-The above command generates the following structure:
-
-```text
-./out/
-└── staging
-    ├── dev-team
-    │   ├── resources.yaml
-    │   └── secrets.yaml
-    └── ops-team
-        ├── resources.yaml
-        └── secrets.yaml
-```
-
-To list all the Kubernetes objects, run the `ls` command:
-
-```console
-$ cue -t staging -t gitToken=${GITHUB_TOKEN} -t slackToken=${SLACK_TOKEN} ls ./generators/tenants/
-TENANT    RESOURCE                                API VERSION
-dev-team  Namespace/dev-apps                      v1
-dev-team  ServiceAccount/dev-apps/flux-dev-team   v1
-dev-team  RoleBinding/dev-apps/flux-dev-team      rbac.authorization.k8s.io/v1
-dev-team  GitRepository/dev-apps/dev-team         source.toolkit.fluxcd.io/v1beta2
-dev-team  Kustomization/dev-apps/dev-team         kustomize.toolkit.fluxcd.io/v1beta2
-dev-team  Secret/dev-apps/git-dev-team            v1
-dev-team  Secret/dev-apps/slack-dev-team          v1
-dev-team  Provider/dev-apps/slack-dev-team        notification.toolkit.fluxcd.io/v1beta1
-dev-team  Alert/dev-apps/slack-dev-team           notification.toolkit.fluxcd.io/v1beta1
-ops-team  Namespace/ops-apps                      v1
-ops-team  ServiceAccount/ops-apps/flux-ops-team   v1
-ops-team  RoleBinding/ops-apps/flux-ops-team      rbac.authorization.k8s.io/v1
-ops-team  GitRepository/ops-apps/ops-team         source.toolkit.fluxcd.io/v1beta2
-ops-team  Kustomization/ops-apps/ops-team         kustomize.toolkit.fluxcd.io/v1beta2
-ops-team  ClusterRoleBinding/flux-ops-team        rbac.authorization.k8s.io/v1
-ops-team  Secret/ops-apps/slack-ops-team          v1
-ops-team  Provider/ops-apps/slack-ops-team        notification.toolkit.fluxcd.io/v1beta1
-ops-team  Alert/ops-apps/slack-ops-team           notification.toolkit.fluxcd.io/v1beta1
-```
-
-To encrypt the Kubernetes secrets on disk using SOPS, run the `build` command with `-t encrypt=sops`:
-
-```shell
-export SOPS_AGE_RECIPIENTS=age10uk5fkvfld6v3ep53me5npz6zz9fqwfs2l8dvv5m29pmalnaefsssslkw4
-
-cue -t staging \
-  -t out=./out/staging \
-  -t gitToken=${GITHUB_TOKEN} \
-  -t slackToken=${SLACK_TOKEN} \
-  -t encrypt=sops \
-  build ./generators/tenants/
-```
-
-The generated manifests can be pushed to the Git repository where you've run `flux bootstrap`
-under the `clusters/staging` directory. Note that Flux must be configured to
-[decrypt the secrets](https://fluxcd.io/docs/components/kustomize/kustomization/#secrets-decryption)
-if you're using SOPS.
+The [releases generator](generators/releases) can be used by various teams to generate the Kubernetes YAML
+manifests needed by Flux for installing and upgrading Helm releases.
