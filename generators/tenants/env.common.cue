@@ -30,6 +30,13 @@ tenants: [...tenant.#Tenant]
 		}
 		slack: token: secrets.slackToken
 	}
+	// Reconcile the dev team workloads only after the ops team has been provisioned.
+	resources: "\(spec.name)-kustomization": spec: dependsOn: [
+		{
+			name:      #OpsTeam.spec.name
+			namespace: #OpsTeam.spec.namespace
+		},
+	]
 }
 
 // Ops team base definition
@@ -45,4 +52,6 @@ tenants: [...tenant.#Tenant]
 		}
 		slack: token: secrets.slackToken
 	}
+	// Wait for all workloads to be read.
+	resources: "\(spec.name)-kustomization": spec: wait: true
 }
