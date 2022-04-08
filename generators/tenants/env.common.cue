@@ -4,19 +4,19 @@ import (
 	"github.com/fluxcd/cues/pkg/tenant"
 )
 
-// Environment defines the destination cluster
+// Environment defines the destination cluster.
 env: *"" | string @tag(env,short=staging|production)
 
-// Secret tokens can be set at runtime from env vars or files
+// Secret tokens can be set at runtime from env vars or files.
 secrets: {
 	gitToken:   *"" | string @tag(gitToken)
 	slackToken: *"" | string @tag(slackToken)
 }
 
-// Tenants holds the list of tenants per env
+// Tenants holds the list of tenants per env.
 tenants: [...tenant.#Tenant]
 
-// Dev team base definition
+// Dev team base definition.
 #DevTeam: tenant.#Tenant & {
 	spec: {
 		name:      "dev-team"
@@ -30,7 +30,7 @@ tenants: [...tenant.#Tenant]
 		}
 		slack: token: secrets.slackToken
 	}
-	// Reconcile the dev team workloads only after the ops team has been provisioned.
+	// Reconcile the dev team workloads only after the ops team have been provisioned.
 	resources: "\(spec.name)-kustomization": spec: dependsOn: [
 		{
 			name:      #OpsTeam.spec.name
@@ -39,7 +39,7 @@ tenants: [...tenant.#Tenant]
 	]
 }
 
-// Ops team base definition
+// Ops team base definition.
 #OpsTeam: tenant.#Tenant & {
 	spec: {
 		name:      "ops-team"
