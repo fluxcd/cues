@@ -5,6 +5,9 @@ _cluster: {
 	name: "stg-eu-central-1"
 }
 
+// Tenants included in this cluster
+tenants: [devTeam, opsTeam]
+
 devTeam: #DevTeam & {
 	spec: {
 		git: path: "./deploy/staging"
@@ -24,6 +27,3 @@ opsTeam: #OpsTeam & {
 		}
 	}
 }
-
-// Add all tenants to the list
-tenants: [devTeam, opsTeam]

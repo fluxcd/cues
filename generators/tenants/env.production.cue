@@ -6,6 +6,9 @@ _cluster: {
 	channel: "prod-alerts"
 }
 
+// Tenants included in this cluster
+tenants: [devTeam, opsTeam]
+
 devTeam: #DevTeam & {
 	spec: {
 		git: path: "./deploy/release"
@@ -25,6 +28,3 @@ opsTeam: #OpsTeam & {
 		}
 	}
 }
-
-// Add all tenants to the list
-tenants: [devTeam, opsTeam]

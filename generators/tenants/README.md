@@ -5,7 +5,7 @@
 The tenant abstraction is intended to help cluster admins define tenants with CUE. It is an alternative to the 
 procedure described in [fluxcd/flux2-multi-tenancy](https://github.com/fluxcd/flux2-multi-tenancy#onboard-new-tenants).
 
-In the `tenants.cue` file you can find an example of how to define Flux tenants:
+In the `env.common.cue` file you can find an example of how to define Flux tenants:
 
 ```cue
 #DevTeam: tenant.#Tenant & {
@@ -24,7 +24,7 @@ In the `tenants.cue` file you can find an example of how to define Flux tenants:
 }
 ```
 
-In the `tenants.staging.cue` file you can find an example of how to set the cluster name
+In the `env.staging.cue` file you can find an example of how to set the cluster name
 for distinguishing alerts based on environment, and how to set the path that's being reconciled by Flux:
 
 ```cue
@@ -48,7 +48,7 @@ export GITHUB_TOKEN=my-gh-personal-access-token
 export SLACK_TOKEN=my-slack-bot-token
 
 cue -t staging \
-  -t out=./out/staging \
+  -t out=./out/staging/tenants \
   -t gitToken=${GITHUB_TOKEN} \
   -t slackToken=${SLACK_TOKEN} \
   build ./generators/tenants/
@@ -59,12 +59,14 @@ The above command generates the following structure:
 ```text
 ./out/
 └── staging
-    ├── dev-team
-    │   ├── resources.yaml
-    │   └── secrets.yaml
-    └── ops-team
-        ├── resources.yaml
-        └── secrets.yaml
+    └── tenants
+        ├── dev-team
+        │   ├── resources.yaml
+        │   └── secrets.yaml
+        └── ops-team
+            ├── resources.yaml
+            └── secrets.yaml
+
 ```
 
 To list all the Kubernetes objects, run the `ls` command:
@@ -98,7 +100,7 @@ To encrypt the Kubernetes secrets on disk using SOPS, run the `build` command wi
 export SOPS_AGE_RECIPIENTS=age10uk5fkvfld6v3ep53me5npz6zz9fqwfs2l8dvv5m29pmalnaefsssslkw4
 
 cue -t staging \
-  -t out=./out/staging \
+  -t out=./out/staging/tenants  \
   -t gitToken=${GITHUB_TOKEN} \
   -t slackToken=${SLACK_TOKEN} \
   -t encrypt=sops \
@@ -109,3 +111,4 @@ The generated manifests can be pushed to the Git repository where you've run `fl
 under the `clusters/staging` directory. Note that Flux must be configured to
 [decrypt the secrets](https://fluxcd.io/docs/components/kustomize/kustomization/#secrets-decryption)
 if you're using SOPS.
+

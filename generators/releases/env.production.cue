@@ -1,6 +1,9 @@
 @if(production)
 package releases
 
+// Releases included in this cluster.
+releases: [podinfo]
+
 podinfo: #Podinfo & {
 	spec: {
 		chart: version: "6.0.x"
@@ -20,12 +23,13 @@ podinfo: #Podinfo & {
 			}
 		}
 		// These values are stored in an immutable Secret encrypted with SOPS.
-		secretValues: {
-			redis: {
-				password: secrets.redisPassword
+		if secrets.redisPassword != "" {
+			secretValues: {
+				redis: {
+					password: secrets.redisPassword
+				}
 			}
 		}
 	}
 }
 
-releases: [podinfo]
