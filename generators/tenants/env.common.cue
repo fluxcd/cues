@@ -24,8 +24,8 @@ tenants: [...tenant.#Tenant]
 		role:      "namespace-admin"
 		git: {
 			token:    secrets.gitToken
-			url:      "https://github.com/org/kube-dev-team"
-			branch:   "main"
+			url:      *"https://github.com/org/kube-ops-team" | string
+			branch:   *"main" | string
 			interval: 2
 		}
 		slack: token: secrets.slackToken
@@ -46,8 +46,8 @@ tenants: [...tenant.#Tenant]
 		namespace: "ops-apps"
 		role:      "cluster-admin"
 		git: {
-			url:      "https://github.com/org/kube-ops-team"
-			branch:   "main"
+			url:      *"https://github.com/org/kube-ops-team" | string
+			branch:   *"main" | string
 			interval: 5
 		}
 		slack: token: secrets.slackToken

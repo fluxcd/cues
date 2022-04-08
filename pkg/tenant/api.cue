@@ -9,8 +9,8 @@ package tenant
 	git: {
 		token:          *"" | string
 		implementation: *"go-git" | "libgit2"
-		url:            string & =~"^http"
-		branch:         *"master" | string
+		url:            string & =~"^http|ssh"
+		branch:         string
 		path:           *"./" | string
 		interval:       *1 | int
 	}
