@@ -6,6 +6,7 @@ releases: [podinfo]
 
 podinfo: #Podinfo & {
 	spec: {
+		serviceAccountName: "flux-apps"
 		chart: version: "6.0.x"
 		// These values are stored in an immutable ConfigMap.
 		values: {
@@ -32,4 +33,3 @@ podinfo: #Podinfo & {
 		}
 	}
 }
-

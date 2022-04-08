@@ -3,10 +3,10 @@ package release
 #ReleaseSpec: {
 	name:      string & =~"^[a-z0-9]([a-z0-9\\-]){0,61}[a-z0-9]$"
 	namespace: string & =~"^[a-z0-9]([a-z0-9\\-]){0,61}[a-z0-9]$"
-	role:      *"namespace-admin" | "cluster-admin"
 	labels: "release.toolkit.fluxcd.io/name":         *name | string
 	annotations: "release.toolkit.fluxcd.io/version": *chart.version | string
-	interval: *10 | int
+	serviceAccountName?: string & =~"^[a-z0-9]([a-z0-9\\-]){0,61}[a-z0-9]$"
+	interval:            *10 | int
 	repository: {
 		url:      string & =~"^[http|oci]"
 		user:     *"" | string

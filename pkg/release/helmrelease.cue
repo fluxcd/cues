@@ -21,6 +21,9 @@ import (
 		annotations: _spec.annotations
 	}
 	spec: {
+		if _spec.serviceAccountName != _|_ {
+			serviceAccountName: _spec.serviceAccountName
+		}
 		interval: "\(2*_spec.interval)m"
 		chart: {
 			spec: {
