@@ -5,6 +5,8 @@
 
 A collection of [CUE](https://cuelang.org) packages and tools for generating [Flux](https://fluxcd.io) configurations.
 
+> Note that this project is in the experimental phase, the CUE APIs may change in a breaking manner.
+
 This project is for Flux users who want to reduce the Kubernetes boilerplate when configuring delivery pipelines across
 environments. Instead of working with Kubernetes YAML, you will build abstractions with CUE, encode good
 practices and validation to simplify complex tasks such as creating a new environment, onboard teams, drive workload
