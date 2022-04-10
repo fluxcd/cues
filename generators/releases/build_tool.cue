@@ -2,6 +2,7 @@ package releases
 
 import (
 	"encoding/yaml"
+	"path"
 	"tool/cli"
 	"tool/exec"
 	"tool/file"
@@ -12,8 +13,8 @@ import (
 
 // The resources map holds the Kubernetes objects belonging to all releases.
 resources: [ID=_]: kubernetes.#Object
-for t in releases {
-	resources: t.resources
+for re in releases {
+ resources: re.resources
 }
 
 // The build command generates the Kubernetes manifests of all releases and prints the multi-docs YAML to stdout.
@@ -53,41 +54,42 @@ command: build: {
 
 	if outDir != "" {
 		list: releases
-		for tn in list {
-			(tn.spec.name): {
-				res: [ for r in tn.resources if r.kind != "Secret" {r}]
+		for re in list {
+			(re.spec.name): {
+				reDir: path.Join([outDir, re.spec.name])
+				res: [ for r in re.resources if r.kind != "Secret" {r}]
 				print: cli.Print & {
-					text: "Exporting releases resources to \(outDir)/\(tn.spec.name)/"
+					text: "Exporting releases resources to \(reDir)/"
 				}
 				mkdir: file.MkdirAll & {
 					$after: print
-					path:   "\(outDir)/\(tn.spec.name)"
+					path:   "\(reDir)"
 				}
 				write: file.Create & {
 					$after:   mkdir
-					filename: "\(outDir)/\(tn.spec.name)/resources.yaml"
+					filename: "\(reDir)/resources.yaml"
 					contents: yaml.MarshalStream(res)
 				}
 
-				secrets: [ for r in tn.resources if r.kind == "Secret" {r}]
+				secrets: [ for r in re.resources if r.kind == "Secret" {r}]
 				if len(secrets) > 0 {
 					printSecrets: cli.Print & {
 						$after: mkdir
-						text:   "Exporting release secrets to \(outDir)/\(tn.spec.name)/"
+						text:   "Exporting release secrets to \(reDir)/"
 					}
 					writeSecrets: file.Create & {
 						$after:   printSecrets
-						filename: "\(outDir)/\(tn.spec.name)/secrets.yaml"
+						filename: "\(reDir)/secrets.yaml"
 						contents: yaml.MarshalStream(secrets)
 					}
 					if encrypt == "sops" {
 						printSops: cli.Print & {
 							$after: writeSecrets
-							text:   "Encrypting release secrets to \(outDir)/\(tn.spec.name)/"
+							text:   "Encrypting release secrets to \(reDir)/"
 						}
 						writeSops: exec.Run & {
 							$after: printSops
-							cmd: [ encrypt, "-e", "-i", "--encrypted-regex=^stringData$", "\(outDir)/\(tn.spec.name)/secrets.yaml"]
+							cmd: [ encrypt, "-e", "-i", "--encrypted-regex=^stringData$", "\(reDir)/secrets.yaml"]
 						}
 					}
 				}

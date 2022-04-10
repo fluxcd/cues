@@ -2,6 +2,7 @@ package tenants
 
 import (
 	"encoding/yaml"
+	"path"
 	"tool/cli"
 	"tool/exec"
 	"tool/file"
@@ -21,7 +22,7 @@ for t in tenants {
 // With '-t encrypt=sops' the Kubernetes Secrets manifests are encrypted with SOPS,
 // the sops binary must be added to PATH and an env var must be set for encryption e.g. SOPS_AGE_RECIPIENTS.
 command: build: {
-	encrypt: *"" | "sops" | string @tag(encrypt)
+	encrypt: *"" | "sops" | string @tag(encrypt,short=sops)
 	outDir:  *"" | string          @tag(out)
 
 	if outDir == "" {
@@ -55,17 +56,18 @@ command: build: {
 		list: tenants
 		for tn in list {
 			(tn.spec.name): {
+				tnDir: path.Join([outDir, tn.spec.name])
 				res: [ for r in tn.resources if r.kind != "Secret" {r}]
 				print: cli.Print & {
-					text: "Exporting tenant resources to \(outDir)/\(tn.spec.name)/"
+					text: "Exporting tenant resources to \(tnDir)/"
 				}
 				mkdir: file.MkdirAll & {
 					$after: print
-					path:   "\(outDir)/\(tn.spec.name)"
+					path:   "\(tnDir)"
 				}
 				write: file.Create & {
 					$after:   mkdir
-					filename: "\(outDir)/\(tn.spec.name)/resources.yaml"
+					filename: "\(tnDir)/resources.yaml"
 					contents: yaml.MarshalStream(res)
 				}
 
@@ -73,21 +75,21 @@ command: build: {
 				if len(secrets) > 0 {
 					printSecrets: cli.Print & {
 						$after: mkdir
-						text:   "Exporting tenant secrets to \(outDir)/\(tn.spec.name)/"
+						text:   "Exporting tenant secrets to \(tnDir)/"
 					}
 					writeSecrets: file.Create & {
 						$after:   printSecrets
-						filename: "\(outDir)/\(tn.spec.name)/secrets.yaml"
+						filename: "\(tnDir)/secrets.yaml"
 						contents: yaml.MarshalStream(secrets)
 					}
 					if encrypt == "sops" {
 						printSops: cli.Print & {
 							$after: writeSecrets
-							text:   "Encrypting tenant secrets to \(outDir)/\(tn.spec.name)/"
+							text:   "Encrypting tenant secrets to \(tnDir)/"
 						}
 						writeSops: exec.Run & {
 							$after: printSops
-							cmd: [ encrypt, "-e", "-i", "--encrypted-regex=^stringData$", "\(outDir)/\(tn.spec.name)/secrets.yaml"]
+							cmd: [ encrypt, "-e", "-i", "--encrypted-regex=^stringData$", "\(tnDir)/secrets.yaml"]
 						}
 					}
 				}
@@ -109,6 +111,7 @@ command: ls: {
 					"\(r.metadata.labels["tenant.toolkit.fluxcd.io/name"]) \t\(r.kind)/\(r.metadata.namespace)/\(r.metadata.name)  \t\(r.apiVersion)"
 				}
 			},
+
 		])
 	}
 }
