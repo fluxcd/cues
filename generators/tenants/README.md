@@ -5,7 +5,7 @@
 The tenant abstraction is intended to help cluster admins define tenants with CUE. It is an alternative to the 
 procedure described in [fluxcd/flux2-multi-tenancy](https://github.com/fluxcd/flux2-multi-tenancy#onboard-new-tenants).
 
-In the `env.common.cue` file you can find an example of how to define Flux tenants:
+In the `env.common.cue` you define a common base for your tenants:
 
 ```cue
 #DevTeam: tenant.#Tenant & {
@@ -24,8 +24,7 @@ In the `env.common.cue` file you can find an example of how to define Flux tenan
 }
 ```
 
-In the `env.staging.cue` file you can find an example of how to set the cluster name
-for distinguishing alerts based on environment, and how to set the path that's being reconciled by Flux:
+In the `env.staging.cue` you add fields that are specific to the staging environment:
 
 ```cue
 devTeam: #DevTeam & {
@@ -94,7 +93,20 @@ ops-team  Provider/ops-apps/slack-ops-team        notification.toolkit.fluxcd.io
 ops-team  Alert/ops-apps/slack-ops-team           notification.toolkit.fluxcd.io/v1beta1
 ```
 
-To encrypt the Kubernetes secrets on disk using SOPS, run the `build` command with `-t encrypt=sops`:
+### Encrypt secrets
+
+For each tenant, the generated manifests can contain two secrets: Git and Slack credentials.
+These secrets should be encrypted before you push the manifests to the branch synced by Flux.
+
+You can pass credentials at build time either from environment variables or from files:
+
+```shell
+cue -t gitToken=${GITHUB_TOKEN}
+cue -t gitToken=$(cat ./github.token)
+```
+
+To encrypt the Kubernetes secrets on disk using [SOPS](https://github.com/mozilla/sops),
+run the `build` command with `-t encrypt=sops`:
 
 ```shell
 export SOPS_AGE_RECIPIENTS=age10uk5fkvfld6v3ep53me5npz6zz9fqwfs2l8dvv5m29pmalnaefsssslkw4
@@ -107,8 +119,10 @@ cue -t staging \
   build ./generators/tenants/
 ```
 
-The generated manifests can be pushed to the Git repository where you've run `flux bootstrap`
-under the `clusters/staging` directory. Note that Flux must be configured to
-[decrypt the secrets](https://fluxcd.io/docs/components/kustomize/kustomization/#secrets-decryption)
-if you're using SOPS.
+### Publish manifests
 
+The generated manifests can be pushed to the Git repository where you've run `flux bootstrap`.
+
+if you're using SOPS, you must configure Flux to
+[decrypt the secrets](https://fluxcd.io/docs/components/kustomize/kustomization/#secrets-decryption)
+in the bootstrapped repository.

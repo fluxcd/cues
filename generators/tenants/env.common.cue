@@ -7,7 +7,9 @@ import (
 // Environment defines the destination cluster.
 env: *"" | string @tag(env,short=staging|production)
 
-// Secret tokens can be set at runtime from env vars or files.
+// Secrets can be set at build time from env vars or files:
+// '-t gitToken=${GITHUB_TOKEN}'
+// '-t slackToken=$(cat ./slack.token)'
 secrets: {
 	gitToken:   *"" | string @tag(gitToken)
 	slackToken: *"" | string @tag(slackToken)
@@ -46,6 +48,7 @@ tenants: [...tenant.#Tenant]
 		namespace: "ops-apps"
 		role:      "cluster-admin"
 		git: {
+			token:    secrets.gitToken
 			url:      *"https://github.com/org/kube-ops-team" | string
 			branch:   *"main" | string
 			interval: 5
