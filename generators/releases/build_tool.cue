@@ -14,7 +14,7 @@ import (
 // The resources map holds the Kubernetes objects belonging to all releases.
 resources: [ID=_]: kubernetes.#Object
 for re in releases {
- resources: re.resources
+	resources: re.resources
 }
 
 // The build command generates the Kubernetes manifests of all releases and prints the multi-docs YAML to stdout.
