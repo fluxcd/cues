@@ -97,6 +97,8 @@ staging: cluster.#Bootstrap & {
 The [clusters generator](generators/clusters) can be used by platform admins to install and upgrade
 Flux on various clusters.
 
+To get started with the clusters generator please see this [guide](generators/clusters/README.md).
+
 ### Release
 
 The [release](pkg/tenant) CUE package is an abstraction built on top of Helm and Flux

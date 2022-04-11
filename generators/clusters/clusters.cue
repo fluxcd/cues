@@ -19,7 +19,7 @@ staging: cluster.#Bootstrap & {
 	name: "staging"
 	git: {
 		// This repository must exists.
-		url: "https://github.com/stefanprodan/local-fleet.git"
+		url: "https://github.com/org/kube-fleet.git"
 		// This branch will be created if it doesn't exists.
 		branch: "main"
 		// This PAT must have push access to the repository.
