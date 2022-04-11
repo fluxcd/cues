@@ -66,6 +66,37 @@ Flux Git repositories, kustomizations, notification providers and alerts.
 
 To get started with the tenants generator please see this [guide](generators/tenants/README.md).
 
+### Cluster
+
+The [cluster](pkg/cluster) CUE package is an abstraction for making `flux bootstrap` declarative.
+
+Example definition:
+
+```cue
+staging: cluster.#Bootstrap & {
+	name: "staging"
+	git: {
+		// This repository must exists.
+		url: "https://github.com/stefanprodan/local-fleet.git"
+		// This branch will be created if it doesn't exists.
+		branch: "main"
+		// This PAT must have push access to the repository.
+		// The PAT is persisted in-cluster as a secret in the flux namespace.
+		token: secrets.gitToken
+		path:  "./clusters/\(name)"
+	}
+	kubeconfig: context: "kind-\(name)"
+	flux: {
+		namespace:  "flux-system"
+		version:    "v0.28.5"
+		components: cluster.Components.All
+	}
+}
+```
+
+The [clusters generator](generators/clusters) can be used by platform admins to install and upgrade
+Flux on various clusters.
+
 ### Release
 
 The [release](pkg/tenant) CUE package is an abstraction built on top of Helm and Flux
