@@ -5,8 +5,6 @@
 
 A collection of [CUE](https://cuelang.org) packages and tools for generating [Flux](https://fluxcd.io) configurations.
 
-> Note that this project is in the experimental phase, the CUE APIs may change in a breaking manner.
-
 ## Project
 
 This project is for Flux users who want to reduce the Kubernetes boilerplate when configuring delivery pipelines across
@@ -14,11 +12,7 @@ environments. Instead of working with Kubernetes YAML, you will build abstractio
 practices and validation to simplify complex tasks such as creating a new environment, onboard teams, drive workload
 promotion and ultimately reduce toil.
 
-### Structure
-
-In [fluxcd/cues/pkg](pkg) are CUE packages that offer a high-level abstraction layer on top of Kubernetes and Flux APIs.
-
-In [fluxcd/cues/generators](generators) are CUE tools for generating, validating and encrypting Kubernetes manifests.
+> Note that this project is in the experimental phase, the CUE APIs may change in a breaking manner.
 
 ### Prerequisites
 
@@ -35,7 +29,7 @@ On macOS or Linux you can install the prerequisites with Homebrew:
 brew install go cue sops fluxcd/tap/flux
 ```
 
-### Secrets 
+### Secrets management
 
 Secrets such as access tokens, SSH keys, certs, etc are stored in plain text in CUE files
 that follow the `secrets.<role>.cue` naming convention.
@@ -43,8 +37,8 @@ that follow the `secrets.<role>.cue` naming convention.
 To safely store these secrets in Git, you'll be using [Mozilla SOPS](https://github.com/mozilla/sops)
 with Age keys or cloud KMS.
 
-Each user with access to this repo, would have its own Age private key in env
-and all the other users public keys:
+Each user with access to this repo, would have its own [Age](https://github.com/FiloSottile/age)
+private key in env and all the other users public keys:
 
 ```shell
 export SOPS_AGE_KEY=USER1-SECRET-KEY
@@ -76,7 +70,7 @@ staging: cluster.#Bootstrap & {
 	name: "staging"
 	git: {
 		// This repository must exists.
-		url: "https://github.com/stefanprodan/local-fleet.git"
+		url: "https://github.com/org/kube-fleet.git"
 		// This branch will be created if it doesn't exists.
 		branch: "main"
 		// This PAT must have push access to the repository.

@@ -7,6 +7,8 @@ import (
 	"tool/file"
 )
 
+sops: marker: "\"data\": \"ENC["
+
 // The seal command encrypts with SOPS all CUE files that match the naming convention 'secrets.<env>.cue'.
 command: seal: {
 	gitRoot: exec.Run & {
@@ -19,12 +21,18 @@ command: seal: {
 	}
 	for _, filepath in list.files {
 		(filepath): {
-			print: cli.Print & {
-				text: "seal \(filepath)"
+			secret: file.Read & {
+				filename: filepath
+				contents: string
 			}
-			sops: exec.Run & {
-				$after: print
-				cmd: [ "sops", "-e", "-i", filepath]
+			if !strings.Contains(secret.contents, sops.marker) {
+				print: cli.Print & {
+					text: "seal \(filepath)"
+				}
+				sops: exec.Run & {
+					$after: print
+					cmd: [ "sops", "-e", "-i", filepath]
+				}
 			}
 		}
 	}
@@ -42,12 +50,18 @@ command: unseal: {
 	}
 	for _, filepath in list.files {
 		(filepath): {
-			print: cli.Print & {
-				text: "unseal \(filepath)"
+			secret: file.Read & {
+				filename: filepath
+				contents: string
 			}
-			sops: exec.Run & {
-				$after: print
-				cmd: [ "sops", "-d", "-i", filepath]
+			if strings.Contains(secret.contents, sops.marker) {
+				print: cli.Print & {
+					text: "unseal \(filepath)"
+				}
+				sops: exec.Run & {
+					$after: print
+					cmd: [ "sops", "-d", "-i", filepath]
+				}
 			}
 		}
 	}
