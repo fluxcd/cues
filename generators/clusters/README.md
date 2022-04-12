@@ -14,9 +14,6 @@ staging: cluster.#Bootstrap & {
 		url: "https://github.com/org/kube-fleet.git"
 		// This branch will be created if it doesn't exists.
 		branch: "main"
-		// This PAT must have push access to the repository.
-		// The PAT is persisted in-cluster as a secret in the flux namespace.
-		token: secrets.gitToken
 		path:  "./clusters/\(name)"
 	}
 	kubeconfig: context: "kind-\(name)"
@@ -28,15 +25,20 @@ staging: cluster.#Bootstrap & {
 }
 ```
 
+In the `secrets.clusters.cue` you store the Git token with write access to the repository:
+
+```cue
+staging: token: "flux-stg-token"
+```
+
+The PAT is persisted in-cluster as a secret in the flux namespace.
+
 ### Bootstrap clusters
 
 To bootstrap one of the defined clusters, run the `bootstrap` command:
 
 ```shell
-export GITHUB_TOKEN=flux-personal-access-token
-
 cue -t cluster=staging \
-  -t gitToken=${GITHUB_TOKEN} \
   bootstrap ./generators/clusters/
 ```
 

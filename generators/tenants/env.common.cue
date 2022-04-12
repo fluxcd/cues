@@ -7,14 +7,6 @@ import (
 // Environment defines the destination cluster.
 env: *"" | string @tag(env,short=staging|production)
 
-// Secrets can be set at build time from env vars or files:
-// '-t gitToken=${GITHUB_TOKEN}'
-// '-t slackToken=$(cat ./slack.token)'
-secrets: {
-	gitToken:   *"" | string @tag(gitToken)
-	slackToken: *"" | string @tag(slackToken)
-}
-
 // Tenants holds the list of tenants per env.
 tenants: [...tenant.#Tenant]
 
@@ -25,12 +17,10 @@ tenants: [...tenant.#Tenant]
 		namespace: "dev-apps"
 		role:      "namespace-admin"
 		git: {
-			token:    secrets.gitToken
 			url:      *"https://github.com/org/kube-ops-team" | string
 			branch:   *"main" | string
 			interval: 2
 		}
-		slack: token: secrets.slackToken
 	}
 	// Reconcile the dev team workloads only after the ops team have been provisioned.
 	resources: "\(spec.name)-kustomization": spec: dependsOn: [
@@ -48,12 +38,10 @@ tenants: [...tenant.#Tenant]
 		namespace: "ops-apps"
 		role:      "cluster-admin"
 		git: {
-			token:    secrets.gitToken
 			url:      *"https://github.com/org/kube-ops-team" | string
 			branch:   *"main" | string
 			interval: 5
 		}
-		slack: token: secrets.slackToken
 	}
 	// Wait for all workloads to be read.
 	resources: "\(spec.name)-kustomization": spec: wait: true

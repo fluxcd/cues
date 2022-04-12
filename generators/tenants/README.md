@@ -14,7 +14,6 @@ In the `env.common.cue` you define a common base for your tenants:
 		namespace: "dev-apps"
 		role:      "namespace-admin"
 		git: {
-			token:    secrets.gitToken
 			url:      "https://github.com/org/kube-dev-team"
 			branch:   "main"
 			interval: 2
@@ -38,18 +37,22 @@ devTeam: #DevTeam & {
 }
 ```
 
+In the `secrets.staging.cue` you add credentials that are specific to the staging environment:
+
+```cue
+devTeam: spec: {
+	git: token:   "stg-dev-git-token1"
+	slack: token: "stg-dev-slack-token1"
+}
+```
+
 ### Generate tenants
 
 To generate the Kubernetes manifests on disk, run the `build` command:
 
 ```shell
-export GITHUB_TOKEN=my-gh-personal-access-token
-export SLACK_TOKEN=my-slack-bot-token
-
 cue -t staging \
   -t out=./out/staging/tenants \
-  -t gitToken=${GITHUB_TOKEN} \
-  -t slackToken=${SLACK_TOKEN} \
   build ./generators/tenants/
 ```
 
@@ -93,28 +96,19 @@ ops-team  Provider/ops-apps/slack-ops-team        notification.toolkit.fluxcd.io
 ops-team  Alert/ops-apps/slack-ops-team           notification.toolkit.fluxcd.io/v1beta1
 ```
 
-### Encrypt secrets
+### Encrypt secrets in YAML output
 
-For each tenant, the generated manifests can contain two secrets: Git and Slack credentials.
+For each tenant, the generated manifests can contain secrets such as Git and Slack credentials.
 These secrets should be encrypted before you push the manifests to the branch synced by Flux.
-
-You can pass credentials at build time either from environment variables or from files:
-
-```shell
-cue -t gitToken=${GITHUB_TOKEN}
-cue -t gitToken=$(cat ./github.token)
-```
 
 To encrypt the Kubernetes secrets on disk using [SOPS](https://github.com/mozilla/sops),
 run the `build` command with `-t encrypt=sops`:
 
 ```shell
-export SOPS_AGE_RECIPIENTS=age10uk5fkvfld6v3ep53me5npz6zz9fqwfs2l8dvv5m29pmalnaefsssslkw4
+export SOPS_AGE_RECIPIENTS=FLUX-PUBLIC-KEY
 
 cue -t staging \
   -t out=./out/staging/tenants  \
-  -t gitToken=${GITHUB_TOKEN} \
-  -t slackToken=${SLACK_TOKEN} \
   -t encrypt=sops \
   build ./generators/tenants/
 ```

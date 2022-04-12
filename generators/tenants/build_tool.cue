@@ -3,6 +3,7 @@ package tenants
 import (
 	"encoding/yaml"
 	"path"
+	"strings"
 	"tool/cli"
 	"tool/exec"
 	"tool/file"
