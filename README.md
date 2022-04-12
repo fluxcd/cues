@@ -7,17 +7,22 @@ A collection of [CUE](https://cuelang.org) packages and tools for generating [Fl
 
 > Note that this project is in the experimental phase, the CUE APIs may change in a breaking manner.
 
+## Project
+
 This project is for Flux users who want to reduce the Kubernetes boilerplate when configuring delivery pipelines across
 environments. Instead of working with Kubernetes YAML, you will build abstractions with CUE, encode good
 practices and validation to simplify complex tasks such as creating a new environment, onboard teams, drive workload
 promotion and ultimately reduce toil.
 
-## Project structure
+### Structure
 
 In [fluxcd/cues/pkg](pkg) are CUE packages that offer a high-level abstraction layer on top of Kubernetes and Flux APIs.
 
 In [fluxcd/cues/generators](generators) are CUE tools for generating, validating and encrypting Kubernetes manifests.
-To run the generators, you'll need the following tools:
+
+### Prerequisites
+
+To run `cue` commands, you'll need the following tools:
 
 - Go >= 1.17.0
 - CUE >= 0.4.3
@@ -30,7 +35,68 @@ On macOS or Linux you can install the prerequisites with Homebrew:
 brew install go cue sops fluxcd/tap/flux
 ```
 
+### Secrets 
+
+Secrets such as access tokens, SSH keys, certs, etc are stored in plain text in CUE files
+that follow the `secrets.<role>.cue` naming convention.
+
+To safely store these secrets in Git, you'll be using [Mozilla SOPS](https://github.com/mozilla/sops)
+with Age keys or cloud KMS.
+
+Each user with access to this repo, would have its own Age private key in env
+and all the other users public keys:
+
+```shell
+export SOPS_AGE_KEY=USER1-SECRET-KEY
+export SOPS_AGE_RECIPIENTS=USER1-PUB-KEY,USER2-PUB-KEY
+```
+
+Before committing changes to Git, you can encrypt all `secrets.*.cue` files with:
+
+```shell
+cue seal .
+```
+
+After pulling changes from Git, you can decrypt the secrets locally with:
+
+```shell
+cue unseal .
+```
+
 ## Abstractions
+
+### Cluster
+
+The [cluster](pkg/cluster) CUE package is an abstraction for making `flux bootstrap` declarative.
+
+Example definition:
+
+```cue
+staging: cluster.#Bootstrap & {
+	name: "staging"
+	git: {
+		// This repository must exists.
+		url: "https://github.com/stefanprodan/local-fleet.git"
+		// This branch will be created if it doesn't exists.
+		branch: "main"
+		// This PAT must have push access to the repository.
+		// The PAT is persisted in-cluster as a secret in the flux namespace.
+		token: secrets.gitToken
+		path:  "./clusters/\(name)"
+	}
+	kubeconfig: context: "kind-\(name)"
+	flux: {
+		namespace:  "flux-system"
+		version:    "v0.28.5"
+		components: cluster.Components.All
+	}
+}
+```
+
+The [clusters generator](generators/clusters) can be used by platform admins to install and upgrade
+Flux on various clusters.
+
+To get started with the clusters generator please see this [guide](generators/clusters/README.md).
 
 ### Tenant
 
@@ -65,39 +131,6 @@ manifests needed by Flux for tenants onboarding, such as: namespaces, service ac
 Flux Git repositories, kustomizations, notification providers and alerts.
 
 To get started with the tenants generator please see this [guide](generators/tenants/README.md).
-
-### Cluster
-
-The [cluster](pkg/cluster) CUE package is an abstraction for making `flux bootstrap` declarative.
-
-Example definition:
-
-```cue
-staging: cluster.#Bootstrap & {
-	name: "staging"
-	git: {
-		// This repository must exists.
-		url: "https://github.com/stefanprodan/local-fleet.git"
-		// This branch will be created if it doesn't exists.
-		branch: "main"
-		// This PAT must have push access to the repository.
-		// The PAT is persisted in-cluster as a secret in the flux namespace.
-		token: secrets.gitToken
-		path:  "./clusters/\(name)"
-	}
-	kubeconfig: context: "kind-\(name)"
-	flux: {
-		namespace:  "flux-system"
-		version:    "v0.28.5"
-		components: cluster.Components.All
-	}
-}
-```
-
-The [clusters generator](generators/clusters) can be used by platform admins to install and upgrade
-Flux on various clusters.
-
-To get started with the clusters generator please see this [guide](generators/clusters/README.md).
 
 ### Release
 
