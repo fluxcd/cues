@@ -24,6 +24,11 @@ import (
 		if _spec.serviceAccountName != _|_ {
 			serviceAccountName: _spec.serviceAccountName
 		}
+		if _spec.targetNamespace != _|_ {
+			install: createNamespace: true
+			targetNamespace:  _spec.targetNamespace
+			storageNamespace: _spec.targetNamespace
+		}
 		interval: "\(2*_spec.interval)m"
 		chart: {
 			spec: {

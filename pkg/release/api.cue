@@ -1,8 +1,9 @@
 package release
 
 #ReleaseSpec: {
-	name:      string & =~"^[a-z0-9]([a-z0-9\\-]){0,61}[a-z0-9]$"
-	namespace: string & =~"^[a-z0-9]([a-z0-9\\-]){0,61}[a-z0-9]$"
+	name:             string & =~"^[a-z0-9]([a-z0-9\\-]){0,61}[a-z0-9]$"
+	namespace:        string & =~"^[a-z0-9]([a-z0-9\\-]){0,61}[a-z0-9]$"
+	targetNamespace?: string & =~"^[a-z0-9]([a-z0-9\\-]){0,61}[a-z0-9]$"
 	labels: "release.toolkit.fluxcd.io/name":         *name | string
 	annotations: "release.toolkit.fluxcd.io/version": *chart.version | string
 	serviceAccountName?: string & =~"^[a-z0-9]([a-z0-9\\-]){0,61}[a-z0-9]$"
