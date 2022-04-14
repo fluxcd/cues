@@ -1,13 +1,11 @@
 package cluster
 
-#Bootstrap: {
+import (
+	"github.com/fluxcd/cues/pkg/release"
+)
+
+#Install: {
 	name: string & =~"^[a-z0-9]([a-z0-9\\-]){0,61}[a-z0-9]$"
-	git: {
-		token:  *"" | string & =~".{1,}"
-		url:    string & =~"^http"
-		branch: string & =~".{1,}"
-		path:   *"./clusters/\(name)" | string
-	}
 	kubeconfig: {
 		context: *"" | string
 		path:    *"" | string
@@ -17,4 +15,5 @@ package cluster
 		version?:   string & =~"^v(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)"
 		components: *Components.Default | [...string]
 	}
+	addons: [...release.#Release]
 }
