@@ -61,7 +61,38 @@ cue unseal .
 
 ### Cluster
 
-The [cluster](pkg/cluster) CUE package is an abstraction for making `flux bootstrap` declarative.
+The [cluster](pkg/cluster) CUE package is an abstraction for making `flux install` and `flux bootstrap` declarative.
+
+#### Install tool
+
+Example definition:
+
+```cue
+local: cluster.#Install & {
+	name: "kind"
+	kubeconfig: context: "kind-\(name)"
+	flux: {
+		namespace:  "flux-system"
+		version:    "v0.28.5"
+		components: cluster.Components.All
+	}
+	addons: [
+		#CertManager & {
+			spec: chart: version: "v1.8.x"
+		},
+		#Kyverno & {
+			spec: chart: version: "v2.3.x"
+		},
+		#MetricsServer & {
+			spec: chart: version: "v3.8.x"
+		},
+	]
+}
+```
+
+To get started with the `cue install` tool please see this [guide](tools/install).
+
+#### Bootstrap tool
 
 Example definition:
 
@@ -87,10 +118,7 @@ staging: cluster.#Bootstrap & {
 }
 ```
 
-The [clusters generator](generators/clusters) can be used by platform admins to install and upgrade
-Flux on various clusters.
-
-To get started with the clusters generator please see this [guide](generators/clusters/README.md).
+To get started with the `cue bootstrap` tool please see this [guide](tools/bootstrap).
 
 ### Tenant
 
