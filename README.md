@@ -2,6 +2,7 @@
 
 [![build](https://github.com/fluxcd/cues/workflows/build/badge.svg)](https://github.com/fluxcd/cues/actions)
 [![license](https://img.shields.io/github/license/fluxcd/cues.svg)](https://github.com/fluxcd/cues/blob/main/LICENSE)
+[![release](https://img.shields.io/github/release/fluxcd/cues/all.svg)](https://github.com/fluxcd/cues/releases)
 
 A collection of [CUE](https://cuelang.org) packages and tools for generating [Flux](https://fluxcd.io) configurations.
 

@@ -81,3 +81,6 @@ package v1beta2
 // ArtifactUpToDateReason signals that an existing Artifact is up-to-date
 // with the Source.
 #ArtifactUpToDateReason: "ArtifactUpToDate"
+
+// CacheOperationFailedReason signals a failure in cache operation.
+#CacheOperationFailedReason: "CacheOperationFailed"

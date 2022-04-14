@@ -56,7 +56,12 @@ import (
 	interval: metav1.#Duration @go(Interval)
 
 	// KubeConfig for reconciling the HelmRelease on a remote cluster.
-	// When specified, KubeConfig takes precedence over ServiceAccountName.
+	// When used in combination with HelmReleaseSpec.ServiceAccountName,
+	// forces the controller to act on behalf of that Service Account at the
+	// target cluster.
+	// If the --default-service-account flag is set, its value will be used as
+	// a controller level fallback for when HelmReleaseSpec.ServiceAccountName
+	// is empty.
 	// +optional
 	kubeConfig?: null | #KubeConfig @go(KubeConfig,*KubeConfig)
 
