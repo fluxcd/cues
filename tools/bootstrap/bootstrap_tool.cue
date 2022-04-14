@@ -1,4 +1,4 @@
-package clusters
+package bootstrap
 
 import (
 	"tool/cli"
@@ -6,8 +6,7 @@ import (
 	"text/tabwriter"
 )
 
-// The bootstrap command targets the cluster specified with '-t cluster=name'
-// using the Git credentials specified with '- gitToken=token'.
+// The bootstrap command targets the cluster specified with '-t cluster=name'.
 command: bootstrap: {
 	clusterName: string @tag(cluster)
 

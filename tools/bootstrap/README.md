@@ -38,8 +38,7 @@ The PAT is persisted in-cluster as a secret in the flux namespace.
 To bootstrap one of the defined clusters, run the `bootstrap` command:
 
 ```shell
-cue -t cluster=staging \
-  bootstrap ./generators/clusters/
+cue -t cluster=staging bootstrap ./tools/bootstrap/
 ```
 
 The above command runs `flux bootstrap git` with args takes from the staging definition.
@@ -47,7 +46,7 @@ The above command runs `flux bootstrap git` with args takes from the staging def
 To list all the defined clusters, run the `ls` command:
 
 ```console
-$ cue ls ./generators/clusters/
+$ cue ls ./tools/bootstrap/
 CLUSTER     REPOSITORY                              PATH
 staging     https://github.com/org/kube-fleet.git   ./clusters/staging
 production  https://github.com/org/kube-fleet.git   ./clusters/production

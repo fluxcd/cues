@@ -1,4 +1,4 @@
-package clusters
+package bootstrap
 
 import (
 	"github.com/fluxcd/cues/pkg/cluster"
