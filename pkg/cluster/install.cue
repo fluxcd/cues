@@ -2,6 +2,7 @@ package cluster
 
 import (
 	"github.com/fluxcd/cues/pkg/release"
+	kubernetes "k8s.io/apimachinery/pkg/runtime"
 )
 
 #Install: {
@@ -16,4 +17,5 @@ import (
 		components: *Components.Default | [...string]
 	}
 	addons: [...release.#Release]
+	addonsConfig: [...kubernetes.#Object]
 }
