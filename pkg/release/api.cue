@@ -1,5 +1,9 @@
 package release
 
+import (
+	kubernetes "k8s.io/apimachinery/pkg/runtime"
+)
+
 #ReleaseSpec: {
 	name:             string & =~"^[a-z0-9]([a-z0-9\\-]){0,61}[a-z0-9]$"
 	namespace:        string & =~"^[a-z0-9]([a-z0-9\\-]){0,61}[a-z0-9]$"
@@ -23,6 +27,7 @@ package release
 
 #Release: {
 	spec: #ReleaseSpec
+	resources: [ID=_]:     kubernetes.#Object
 	valuesFrom: [ string]: string
 
 	if spec.values != null {
@@ -37,10 +42,8 @@ package release
 		valuesFrom: "\(rs.kind)":          rs.metadata.name
 	}
 
-	resources: {
-		"\(spec.name)-repository": #HelmRepository & {_spec: spec}
-		"\(spec.name)-release":    #HelmRelease & {_spec:    spec, _valuesFrom: valuesFrom}
-	}
+	resources: "\(spec.name)-repository": #HelmRepository & {_spec: spec}
+	resources: "\(spec.name)-release":    #HelmRelease & {_spec:    spec, _valuesFrom: valuesFrom}
 
 	if spec.repository.password != "" {
 		resources: "\(spec.name)-reposecret": #HelmSecret & {_spec: spec}
