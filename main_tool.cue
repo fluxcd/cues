@@ -9,7 +9,7 @@ import (
 
 sops: marker: "\"data\": \"ENC["
 
-// The seal command encrypts with SOPS all CUE files that match the naming convention 'secrets.<env>.cue'.
+// The seal command encrypts with SOPS all CUE files  with the extension '.secrets.cue'.
 command: seal: {
 	gitRoot: exec.Run & {
 		cmd: ["git", "rev-parse", "--show-toplevel"]
@@ -17,7 +17,7 @@ command: seal: {
 		path:   strings.TrimSpace(stdout)
 	}
 	list: file.Glob & {
-		glob: "\(gitRoot.path)/**/**/secrets.*.cue"
+		glob: "\(gitRoot.path)/**/**/*.secrets.cue"
 	}
 	for _, filepath in list.files {
 		(filepath): {
@@ -38,7 +38,7 @@ command: seal: {
 	}
 }
 
-// The unseal command decrypts with SOPS all CUE files that match the naming convention 'secrets.<env>.cue'.
+// The unseal command decrypts with SOPS all CUE files with the extension '.secrets.cue'.
 command: unseal: {
 	gitRoot: exec.Run & {
 		cmd: ["git", "rev-parse", "--show-toplevel"]
@@ -46,7 +46,7 @@ command: unseal: {
 		path:   strings.TrimSpace(stdout)
 	}
 	list: file.Glob & {
-		glob: "\(gitRoot.path)/**/**/secrets.*.cue"
+		glob: "\(gitRoot.path)/**/**/*.secrets.cue"
 	}
 	for _, filepath in list.files {
 		(filepath): {

@@ -2,7 +2,7 @@
 
 [![build](https://github.com/fluxcd/cues/workflows/build/badge.svg)](https://github.com/fluxcd/cues/actions)
 [![license](https://img.shields.io/github/license/fluxcd/cues.svg)](https://github.com/fluxcd/cues/blob/main/LICENSE)
-[![release](https://img.shields.io/github/release/fluxcd/cues/all.svg)](https://github.com/fluxcd/cues/releases)
+[![release](https://img.shields.io/github/v/tag/fluxcd/cues?include_prereleases&label=release)](https://github.com/fluxcd/cues/tags)
 
 A collection of [CUE](https://cuelang.org) packages and tools for generating [Flux](https://fluxcd.io) configurations.
 
@@ -33,7 +33,7 @@ brew install go cue sops fluxcd/tap/flux
 ### Secrets management
 
 Secrets such as access tokens, SSH keys, certs, etc are stored in plain text in CUE files
-that follow the `secrets.<role>.cue` naming convention.
+that follow the `<name>.secrets.cue` naming convention.
 
 To safely store these secrets in Git, you'll be using [Mozilla SOPS](https://github.com/mozilla/sops)
 with Age keys or cloud KMS.
@@ -46,7 +46,7 @@ export SOPS_AGE_KEY=USER1-SECRET-KEY
 export SOPS_AGE_RECIPIENTS=USER1-PUB-KEY,USER2-PUB-KEY
 ```
 
-Before committing changes to Git, you can encrypt all `secrets.*.cue` files with:
+Before committing changes to Git, you can encrypt all `*.secrets.cue` files with:
 
 ```shell
 cue seal .
