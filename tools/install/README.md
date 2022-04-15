@@ -1,8 +1,12 @@
 # Flux install
 
-### Define clusters
+This tool is intended for **non-gitops** deployments of Flux.
+Instead of [bootstrapping](../bootstrap) Flux for a Git repository,
+we install Flux and Minio directly on a cluster, then using the Minio client
+we can upload Kubernetes manifests generated with CUE. Flux will be using
+a Minio bucket to reconcile the cluster state.
 
-The cluster abstraction is intended to help cluster admins install and upgrade Flux in a declarative manner.
+## Define clusters and addons
 
 In the `clusters.cue` you define the Kubernetes clusters that are subject to install:
 
@@ -15,22 +19,17 @@ local: cluster.#Install & {
 		components: cluster.Components.All
 	}
 	addons: [
-		#CertManager & {
-			spec: chart: version: "v1.8.x"
-		},
-		#Kyverno & {
-			spec: chart: version: "v2.3.x"
-		},
 		#MetricsServer & {
-			spec: chart: version: "v3.8.x"
+			spec: chart: version: "v3.x"
+		},
+		#Minio & {
+			spec: chart: version: "v3.x"
 		},
 	]
 }
 ```
 
-### Define addons
-
-In the `addons.cue` you define cluster addons that are managed by Flux:
+In the `addons.cue` you define the cluster addons that are managed by Flux:
 
 ```cue
 #CertManager: release.#Release & {
@@ -59,34 +58,12 @@ the version can be a semver range:
 local: cluster.#Install & {
 	...
 	addons: [
-		#MetricsServer & {
-			spec: chart: version: "v3.8.x" //<- upgrade to the latest patch release
+		#CertManager & {
+			spec: chart: version: "v1.8.x" //<- upgrade to the latest patch version
 		},
 	]
 }
 ```
-
-### Install/Upgrade
-
-Create a local cluster with Kubernetes kind:
-
-```shell
-kind create cluster
-```
-
-To install Flux and the addons, run the `install` command:
-
-```console
-$ cue -t cluster=kind install ./tools/install/
-► installing components in flux-system namespace
-✔ install finished
-► waiting for 3 addon(s) to become ready
-helmrelease.helm.toolkit.fluxcd.io/cert-manager condition met
-helmrelease.helm.toolkit.fluxcd.io/kyverno condition met
-helmrelease.helm.toolkit.fluxcd.io/metrics-server condition met
-```
-
-The above command runs `flux bootstrap git` with args takes from the staging definition.
 
 To list all the defined clusters, run the `ls` command:
 
@@ -94,6 +71,58 @@ To list all the defined clusters, run the `ls` command:
 $ cue ls ./tools/install/
 CLUSTER  CONTEXT                                      ADDONS
 kind     kind-kind                                    3
-eks      demo@fluxcd.io@test.eu-central-1.eksctl.io   3
-gke      gke_demo_europe-west4-a_test                 2
+eks      demo@fluxcd.io@test.eu-central-1.eksctl.io   4
+gke      gke_demo_europe-west4-a_test                 3
 ```
+
+## Setup Flux and Minio on Kubernetes Kind
+
+### Create a local cluster
+
+Create a local cluster with [Kubernetes Kind](https://kind.sigs.k8s.io/):
+
+```shell
+kind create cluster
+```
+
+### Install Flux
+
+To install Flux and Minio on your local cluster, run the `install` command:
+
+```console
+$ cue -t cluster=kind install ./tools/install/
+► installing components in flux-system namespace
+✔ install finished
+► waiting for 2 addon(s) to become ready
+helmrelease.helm.toolkit.fluxcd.io/metrics-server condition met
+helmrelease.helm.toolkit.fluxcd.io/minio condition met
+```
+
+To upgrade Flux or change any of the addons, rerun `cue install`.
+
+At install time, Flux is configured to reconcile the cluster with the
+content of the `flux` bucket hosted by Minio.
+
+```shell
+flux get source bucket flux-system
+flux get kustomization flux-system
+```
+
+### Connect to Minio
+
+Install the Minio client CLI with `brew install minio-mc`.
+The start port forwarding to the Minio instance and create an alias for it:
+
+```shell
+kubectl -n flux-system port-forward svc/minio 9000:9000  &
+mc alias set minio http://localhost:9000 flux toolkit.fluxcd.io --api S3v4
+```
+
+You can generate Kubernetes YAMLs with the CUE generators,
+then you can sync the local `out` dir to the cluster with:
+
+```shell
+mc mirror --watch ./out/ minio/flux
+```
+
+Flux monitors the bucket and reconciles the changes on the cluster.

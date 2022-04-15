@@ -91,7 +91,7 @@ minio: {
 		serviceAccountName: "kustomize-controller"
 		sourceRef: {
 			kind: "Bucket"
-			name: "flux-system"
+			name: minio.metadata.name
 		}
 		path:     "./"
 		prune:    true

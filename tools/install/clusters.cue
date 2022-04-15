@@ -17,10 +17,10 @@ local: cluster.#Install & {
 	}
 	addons: [
 		#MetricsServer & {
-			spec: chart: version: "v3.8.x"
+			spec: chart: version: "v3.x"
 		},
 		#Minio & {
-			spec: chart: version: "v3.6.x"
+			spec: chart: version: "v3.x"
 		},
 	]
 }
@@ -43,6 +43,9 @@ aws: cluster.#Install & {
 		#MetricsServer & {
 			spec: chart: version: "v3.8.x"
 		},
+		#Minio & {
+			spec: chart: version: "v3.6.x"
+		},
 	]
 }
 
@@ -60,6 +63,9 @@ gcp: cluster.#Install & {
 		},
 		#Kyverno & {
 			spec: chart: version: "v2.3.x"
+		},
+		#Minio & {
+			spec: chart: version: "v3.6.x"
 		},
 	]
 }
