@@ -68,8 +68,27 @@ command: install: {
 								"hr",
 								"--all",
 								"--for=condition=ready",
-								"--timeout=3m",
+								"--timeout=80s",
 							]
+						}
+						if len(c.addonsConfig) > 0 {
+							printRes: cli.Print & {
+								$after: wait
+								text:   "► applying addons configuration"
+							}
+							applyRes: exec.Run & {
+								$after: printRes
+								stdin:  yaml.MarshalStream([ for r in c.addonsConfig {r}])
+								cmd: [
+									"kubectl",
+									if c.kubeconfig.context != "" {
+										"--context=\(c.kubeconfig.context)"
+									},
+									"apply",
+									"--server-side",
+									"-f-",
+								]
+							}
 						}
 					}
 				}

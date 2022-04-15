@@ -16,14 +16,11 @@ local: cluster.#Install & {
 		components: cluster.Components.All
 	}
 	addons: [
-		#CertManager & {
-			spec: chart: version: "v1.8.x"
-		},
-		#Kyverno & {
-			spec: chart: version: "v2.3.x"
-		},
 		#MetricsServer & {
 			spec: chart: version: "v3.8.x"
+		},
+		#Minio & {
+			spec: chart: version: "v3.6.x"
 		},
 	]
 }
