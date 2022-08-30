@@ -38,8 +38,6 @@ import (
 	// Overhead represents the resource overhead associated with running a pod for a
 	// given RuntimeClass. For more details, see
 	//  https://kubernetes.io/docs/concepts/scheduling-eviction/pod-overhead/
-	// This field is in beta starting v1.18
-	// and is only honored by servers that enable the PodOverhead feature.
 	// +optional
 	overhead?: null | #Overhead @go(Overhead,*Overhead) @protobuf(3,bytes,opt)
 

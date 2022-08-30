@@ -321,11 +321,7 @@ import (
 	//
 	// This field was immutable in Kubernetes <= 1.22 and now is mutable.
 	//
-	// This is a beta field and only available when the CSIStorageCapacity
-	// feature is enabled. The default is false.
-	//
 	// +optional
-	// +featureGate=CSIStorageCapacity
 	storageCapacity?: null | bool @go(StorageCapacity,*bool) @protobuf(4,bytes,opt)
 
 	// Defines if the underlying volume supports changing ownership and
@@ -371,6 +367,27 @@ import (
 	//
 	// +optional
 	requiresRepublish?: null | bool @go(RequiresRepublish,*bool) @protobuf(7,varint,opt)
+
+	// SELinuxMount specifies if the CSI driver supports "-o context"
+	// mount option.
+	//
+	// When "true", the CSI driver must ensure that all volumes provided by this CSI
+	// driver can be mounted separately with different `-o context` options. This is
+	// typical for storage backends that provide volumes as filesystems on block
+	// devices or as independent shared volumes.
+	// Kubernetes will call NodeStage / NodePublish with "-o context=xyz" mount
+	// option when mounting a ReadWriteOncePod volume used in Pod that has
+	// explicitly set SELinux context. In the future, it may be expanded to other
+	// volume AccessModes. In any case, Kubernetes will ensure that the volume is
+	// mounted only with a single SELinux context.
+	//
+	// When "false", Kubernetes won't pass any special SELinux mount options to the driver.
+	// This is typical for volumes that represent subdirectories of a bigger shared filesystem.
+	//
+	// Default is "false".
+	//
+	// +optional
+	seLinuxMount?: null | bool @go(SELinuxMount,*bool) @protobuf(8,varint,opt)
 }
 
 // FSGroupPolicy specifies if a CSI Driver supports modifying
@@ -550,9 +567,13 @@ import (
 //
 // The producer of these objects can decide which approach is more suitable.
 //
-// They are consumed by the kube-scheduler if the CSIStorageCapacity beta feature gate
-// is enabled there and a CSI driver opts into capacity-aware scheduling with
-// CSIDriver.StorageCapacity.
+// They are consumed by the kube-scheduler when a CSI driver opts into
+// capacity-aware scheduling with CSIDriverSpec.StorageCapacity. The scheduler
+// compares the MaximumVolumeSize against the requested size of pending volumes
+// to filter out unsuitable nodes. If MaximumVolumeSize is unset, it falls back
+// to a comparison against the less precise Capacity. If that is also unset,
+// the scheduler assumes that capacity is insufficient and tries some other
+// node.
 #CSIStorageCapacity: {
 	metav1.#TypeMeta
 
@@ -592,7 +613,7 @@ import (
 	// The semantic is currently (CSI spec 1.2) defined as:
 	// The available capacity, in bytes, of the storage that can be used
 	// to provision volumes. If not set, that information is currently
-	// unavailable and treated like zero capacity.
+	// unavailable.
 	//
 	// +optional
 	capacity?: null | resource.#Quantity @go(Capacity,*resource.Quantity) @protobuf(4,bytes,opt)

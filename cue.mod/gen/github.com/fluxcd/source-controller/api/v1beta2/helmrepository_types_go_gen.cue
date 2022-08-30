@@ -17,6 +17,13 @@ import (
 // objects by their HelmRepositorySpec.URL.
 #HelmRepositoryURLIndexKey: ".metadata.helmRepositoryURL"
 
+// HelmRepositoryTypeDefault is the default HelmRepository type.
+// It is used when no type is specified and corresponds to a Helm repository.
+#HelmRepositoryTypeDefault: "default"
+
+// HelmRepositoryTypeOCI is the type for an OCI repository.
+#HelmRepositoryTypeOCI: "oci"
+
 // HelmRepositorySpec specifies the required configuration to produce an
 // Artifact for a Helm repository index YAML.
 #HelmRepositorySpec: {
@@ -47,7 +54,9 @@ import (
 	// +required
 	interval: metav1.#Duration @go(Interval)
 
-	// Timeout of the index fetch operation, defaults to 60s.
+	// Timeout is used for the index fetch operation for an HTTPS helm repository,
+	// and for remote OCI Repository operations like pulling for an OCI helm repository.
+	// Its default value is 60s.
 	// +kubebuilder:default:="60s"
 	// +optional
 	timeout?: null | metav1.#Duration @go(Timeout,*metav1.Duration)
@@ -62,6 +71,20 @@ import (
 	// NOTE: Not implemented, provisional as of https://github.com/fluxcd/flux2/pull/2092
 	// +optional
 	accessFrom?: null | acl.#AccessFrom @go(AccessFrom,*acl.AccessFrom)
+
+	// Type of the HelmRepository.
+	// When this field is set to  "oci", the URL field value must be prefixed with "oci://".
+	// +kubebuilder:validation:Enum=default;oci
+	// +optional
+	type?: string @go(Type)
+
+	// Provider used for authentication, can be 'aws', 'azure', 'gcp' or 'generic'.
+	// This field is optional, and only taken into account if the .spec.type field is set to 'oci'.
+	// When not specified, defaults to 'generic'.
+	// +kubebuilder:validation:Enum=generic;aws;azure;gcp
+	// +kubebuilder:default:=generic
+	// +optional
+	provider?: string @go(Provider)
 }
 
 // HelmRepositoryStatus records the observed state of the HelmRepository.

@@ -7,6 +7,7 @@ package v1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 )
 
 // StorageClass describes the parameters for a class of storage for
@@ -319,9 +320,6 @@ import (
 	//
 	// This field was immutable in Kubernetes <= 1.22 and now is mutable.
 	//
-	// This is a beta field and only available when the CSIStorageCapacity
-	// feature is enabled. The default is false.
-	//
 	// +optional
 	// +featureGate=CSIStorageCapacity
 	storageCapacity?: null | bool @go(StorageCapacity,*bool) @protobuf(4,bytes,opt)
@@ -369,6 +367,27 @@ import (
 	//
 	// +optional
 	requiresRepublish?: null | bool @go(RequiresRepublish,*bool) @protobuf(7,varint,opt)
+
+	// SELinuxMount specifies if the CSI driver supports "-o context"
+	// mount option.
+	//
+	// When "true", the CSI driver must ensure that all volumes provided by this CSI
+	// driver can be mounted separately with different `-o context` options. This is
+	// typical for storage backends that provide volumes as filesystems on block
+	// devices or as independent shared volumes.
+	// Kubernetes will call NodeStage / NodePublish with "-o context=xyz" mount
+	// option when mounting a ReadWriteOncePod volume used in Pod that has
+	// explicitly set SELinux context. In the future, it may be expanded to other
+	// volume AccessModes. In any case, Kubernetes will ensure that the volume is
+	// mounted only with a single SELinux context.
+	//
+	// When "false", Kubernetes won't pass any special SELinux mount options to the driver.
+	// This is typical for volumes that represent subdirectories of a bigger shared filesystem.
+	//
+	// Default is "false".
+	//
+	// +optional
+	seLinuxMount?: null | bool @go(SELinuxMount,*bool) @protobuf(8,varint,opt)
 }
 
 // FSGroupPolicy specifies if a CSI Driver supports modifying
@@ -533,4 +552,102 @@ import (
 
 	// items is the list of CSINode
 	items: [...#CSINode] @go(Items,[]CSINode) @protobuf(2,bytes,rep)
+}
+
+// CSIStorageCapacity stores the result of one CSI GetCapacity call.
+// For a given StorageClass, this describes the available capacity in a
+// particular topology segment.  This can be used when considering where to
+// instantiate new PersistentVolumes.
+//
+// For example this can express things like:
+// - StorageClass "standard" has "1234 GiB" available in "topology.kubernetes.io/zone=us-east1"
+// - StorageClass "localssd" has "10 GiB" available in "kubernetes.io/hostname=knode-abc123"
+//
+// The following three cases all imply that no capacity is available for
+// a certain combination:
+// - no object exists with suitable topology and storage class name
+// - such an object exists, but the capacity is unset
+// - such an object exists, but the capacity is zero
+//
+// The producer of these objects can decide which approach is more suitable.
+//
+// They are consumed by the kube-scheduler when a CSI driver opts into
+// capacity-aware scheduling with CSIDriverSpec.StorageCapacity. The scheduler
+// compares the MaximumVolumeSize against the requested size of pending volumes
+// to filter out unsuitable nodes. If MaximumVolumeSize is unset, it falls back
+// to a comparison against the less precise Capacity. If that is also unset,
+// the scheduler assumes that capacity is insufficient and tries some other
+// node.
+#CSIStorageCapacity: {
+	metav1.#TypeMeta
+
+	// Standard object's metadata. The name has no particular meaning. It must be
+	// be a DNS subdomain (dots allowed, 253 characters). To ensure that
+	// there are no conflicts with other CSI drivers on the cluster, the recommendation
+	// is to use csisc-<uuid>, a generated name, or a reverse-domain name which ends
+	// with the unique CSI driver name.
+	//
+	// Objects are namespaced.
+	//
+	// More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
+	// +optional
+	metadata?: metav1.#ObjectMeta @go(ObjectMeta) @protobuf(1,bytes,opt)
+
+	// NodeTopology defines which nodes have access to the storage
+	// for which capacity was reported. If not set, the storage is
+	// not accessible from any node in the cluster. If empty, the
+	// storage is accessible from all nodes. This field is
+	// immutable.
+	//
+	// +optional
+	nodeTopology?: null | metav1.#LabelSelector @go(NodeTopology,*metav1.LabelSelector) @protobuf(2,bytes,opt)
+
+	// The name of the StorageClass that the reported capacity applies to.
+	// It must meet the same requirements as the name of a StorageClass
+	// object (non-empty, DNS subdomain). If that object no longer exists,
+	// the CSIStorageCapacity object is obsolete and should be removed by its
+	// creator.
+	// This field is immutable.
+	storageClassName: string @go(StorageClassName) @protobuf(3,bytes)
+
+	// Capacity is the value reported by the CSI driver in its GetCapacityResponse
+	// for a GetCapacityRequest with topology and parameters that match the
+	// previous fields.
+	//
+	// The semantic is currently (CSI spec 1.2) defined as:
+	// The available capacity, in bytes, of the storage that can be used
+	// to provision volumes. If not set, that information is currently
+	// unavailable.
+	//
+	// +optional
+	capacity?: null | resource.#Quantity @go(Capacity,*resource.Quantity) @protobuf(4,bytes,opt)
+
+	// MaximumVolumeSize is the value reported by the CSI driver in its GetCapacityResponse
+	// for a GetCapacityRequest with topology and parameters that match the
+	// previous fields.
+	//
+	// This is defined since CSI spec 1.4.0 as the largest size
+	// that may be used in a
+	// CreateVolumeRequest.capacity_range.required_bytes field to
+	// create a volume with the same parameters as those in
+	// GetCapacityRequest. The corresponding value in the Kubernetes
+	// API is ResourceRequirements.Requests in a volume claim.
+	//
+	// +optional
+	maximumVolumeSize?: null | resource.#Quantity @go(MaximumVolumeSize,*resource.Quantity) @protobuf(5,bytes,opt)
+}
+
+// CSIStorageCapacityList is a collection of CSIStorageCapacity objects.
+#CSIStorageCapacityList: {
+	metav1.#TypeMeta
+
+	// Standard list metadata
+	// More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
+	// +optional
+	metadata?: metav1.#ListMeta @go(ListMeta) @protobuf(1,bytes,opt)
+
+	// Items is the list of CSIStorageCapacity objects.
+	// +listType=map
+	// +listMapKey=name
+	items: [...#CSIStorageCapacity] @go(Items,[]CSIStorageCapacity) @protobuf(2,bytes,rep)
 }

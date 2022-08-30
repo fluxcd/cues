@@ -12,6 +12,8 @@ import (
 
 #ImageRepositoryKind: "ImageRepository"
 
+#ImageRepositoryFinalizer: "finalizers.fluxcd.io"
+
 // ImageRepositorySpec defines the parameters for scanning an image
 // repository, e.g., `fluxcd/flux`.
 #ImageRepositorySpec: {
@@ -36,6 +38,11 @@ import (
 	// +optional
 	secretRef?: null | meta.#LocalObjectReference @go(SecretRef,*meta.LocalObjectReference)
 
+	// ServiceAccountName is the name of the Kubernetes ServiceAccount used to authenticate
+	// the image pull if the service account has attached pull secrets.
+	// +optional
+	serviceAccountName?: string @go(ServiceAccountName)
+
 	// CertSecretRef can be given the name of a secret containing
 	// either or both of
 	//
@@ -59,6 +66,11 @@ import (
 	// to the ImageRepository object based on the caller's namespace labels.
 	// +optional
 	accessFrom?: null | acl.#AccessFrom @go(AccessFrom,*acl.AccessFrom)
+
+	// ExclusionList is a list of regex strings used to exclude certain tags
+	// from being stored in the database.
+	// +optional
+	exclusionList?: [...string] @go(ExclusionList,[]string)
 }
 
 #ScanResult: {

@@ -9,7 +9,8 @@ import (
 	"github.com/fluxcd/pkg/apis/meta"
 )
 
-#ImageUpdateAutomationKind: "ImageUpdateAutomation"
+#ImageUpdateAutomationKind:      "ImageUpdateAutomation"
+#ImageUpdateAutomationFinalizer: "finalizers.fluxcd.io"
 
 // ImageUpdateAutomationSpec defines the desired state of ImageUpdateAutomation
 #ImageUpdateAutomationSpec: {

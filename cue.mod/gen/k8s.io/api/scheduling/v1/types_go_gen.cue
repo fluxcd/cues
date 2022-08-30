@@ -39,7 +39,6 @@ import (
 	// PreemptionPolicy is the Policy for preempting pods with lower priority.
 	// One of Never, PreemptLowerPriority.
 	// Defaults to PreemptLowerPriority if unset.
-	// This field is beta-level, gated by the NonPreemptingPriority feature-gate.
 	// +optional
 	preemptionPolicy?: null | apiv1.#PreemptionPolicy @go(PreemptionPolicy,*apiv1.PreemptionPolicy) @protobuf(5,bytes,opt)
 }

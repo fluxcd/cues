@@ -85,8 +85,6 @@ import (
 	//
 	// The minimum valid value for expirationSeconds is 600, i.e. 10 minutes.
 	//
-	// As of v1.22, this field is beta and is controlled via the CSRDuration feature gate.
-	//
 	// +optional
 	expirationSeconds?: null | int32 @go(ExpirationSeconds,*int32) @protobuf(8,varint,opt)
 
@@ -192,7 +190,6 @@ import (
 }
 
 // RequestConditionType is the type of a CertificateSigningRequestCondition
-// +enum
 #RequestConditionType: string // #enumRequestConditionType
 
 #enumRequestConditionType:
@@ -264,7 +261,9 @@ import (
 
 // KeyUsage specifies valid usage contexts for keys.
 // See: https://tools.ietf.org/html/rfc5280#section-4.2.1.3
-//      https://tools.ietf.org/html/rfc5280#section-4.2.1.12
+//
+// https://tools.ietf.org/html/rfc5280#section-4.2.1.12
+//
 // +enum
 #KeyUsage: string // #enumKeyUsage
 

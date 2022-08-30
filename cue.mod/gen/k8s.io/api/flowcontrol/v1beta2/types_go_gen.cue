@@ -425,8 +425,8 @@ import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 // LimitedPriorityLevelConfiguration specifies how to handle requests that are subject to limits.
 // It addresses two issues:
-//  * How are requests for this priority level limited?
-//  * What should be done with requests that exceed the limit?
+//   - How are requests for this priority level limited?
+//   - What should be done with requests that exceed the limit?
 #LimitedPriorityLevelConfiguration: {
 	// `assuredConcurrencyShares` (ACS) configures the execution
 	// limit, which is a limit on the number of requests of this

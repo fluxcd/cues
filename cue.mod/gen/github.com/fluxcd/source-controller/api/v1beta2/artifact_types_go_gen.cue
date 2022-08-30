@@ -37,4 +37,8 @@ import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	// Size is the number of bytes in the file.
 	// +optional
 	size?: null | int64 @go(Size,*int64)
+
+	// Metadata holds upstream information such as OCI annotations.
+	// +optional
+	metadata?: {[string]: string} @go(Metadata,map[string]string)
 }

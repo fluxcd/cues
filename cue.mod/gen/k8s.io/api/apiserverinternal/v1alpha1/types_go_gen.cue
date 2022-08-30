@@ -6,7 +6,7 @@ package v1alpha1
 
 import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-//  Storage version of a specific resource.
+// Storage version of a specific resource.
 #StorageVersion: {
 	metav1.#TypeMeta
 

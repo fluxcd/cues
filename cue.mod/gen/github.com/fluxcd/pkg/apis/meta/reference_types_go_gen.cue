@@ -42,3 +42,17 @@ package meta
 	// +optional
 	namespace?: string @go(Namespace)
 }
+
+// SecretKeyReference contains enough information to locate the referenced Kubernetes Secret object in the same
+// namespace. Optionally a key can be specified.
+// Use this type instead of core/v1 SecretKeySelector when the Key is optional and the Optional field is not
+// applicable.
+#SecretKeyReference: {
+	// Name of the Secret.
+	// +required
+	name: string @go(Name)
+
+	// Key in the Secret, when not specified an implementation-specific default key is used.
+	// +optional
+	key?: string @go(Key)
+}
