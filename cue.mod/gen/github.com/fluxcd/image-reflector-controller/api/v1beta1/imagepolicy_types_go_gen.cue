@@ -11,6 +11,8 @@ import (
 
 #ImagePolicyKind: "ImagePolicy"
 
+#ImagePolicyFinalizer: "finalizers.fluxcd.io"
+
 // ImagePolicySpec defines the parameters for calculating the
 // ImagePolicy
 #ImagePolicySpec: {

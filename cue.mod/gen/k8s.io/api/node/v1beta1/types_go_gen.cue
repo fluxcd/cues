@@ -38,7 +38,6 @@ import (
 	// Overhead represents the resource overhead associated with running a pod for a
 	// given RuntimeClass. For more details, see
 	// https://git.k8s.io/enhancements/keps/sig-node/688-pod-overhead/README.md
-	// This field is beta-level as of Kubernetes v1.18, and is only honored by servers that enable the PodOverhead feature.
 	// +optional
 	overhead?: null | #Overhead @go(Overhead,*Overhead) @protobuf(3,bytes,opt)
 

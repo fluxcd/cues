@@ -14,7 +14,7 @@ import (
 // ProviderSpec defines the desired state of Provider
 #ProviderSpec: {
 	// Type of provider
-	// +kubebuilder:validation:Enum=slack;discord;msteams;rocket;generic;github;gitlab;bitbucket;azuredevops;googlechat;webex;sentry;azureeventhub;telegram;lark;matrix;opsgenie;alertmanager;grafana;
+	// +kubebuilder:validation:Enum=slack;discord;msteams;rocket;generic;github;gitlab;bitbucket;azuredevops;googlechat;webex;sentry;azureeventhub;telegram;lark;matrix;opsgenie;alertmanager;grafana;githubdispatch;
 	// +required
 	type: string @go(Type)
 
@@ -54,25 +54,26 @@ import (
 	suspend?: bool @go(Suspend)
 }
 
-#GenericProvider:       "generic"
-#SlackProvider:         "slack"
-#GrafanaProvider:       "grafana"
-#DiscordProvider:       "discord"
-#MSTeamsProvider:       "msteams"
-#RocketProvider:        "rocket"
-#GitHubProvider:        "github"
-#GitLabProvider:        "gitlab"
-#BitbucketProvider:     "bitbucket"
-#AzureDevOpsProvider:   "azuredevops"
-#GoogleChatProvider:    "googlechat"
-#WebexProvider:         "webex"
-#SentryProvider:        "sentry"
-#AzureEventHubProvider: "azureeventhub"
-#TelegramProvider:      "telegram"
-#LarkProvider:          "lark"
-#Matrix:                "matrix"
-#OpsgenieProvider:      "opsgenie"
-#AlertManagerProvider:  "alertmanager"
+#GenericProvider:        "generic"
+#SlackProvider:          "slack"
+#GrafanaProvider:        "grafana"
+#DiscordProvider:        "discord"
+#MSTeamsProvider:        "msteams"
+#RocketProvider:         "rocket"
+#GitHubDispatchProvider: "githubdispatch"
+#GitHubProvider:         "github"
+#GitLabProvider:         "gitlab"
+#BitbucketProvider:      "bitbucket"
+#AzureDevOpsProvider:    "azuredevops"
+#GoogleChatProvider:     "googlechat"
+#WebexProvider:          "webex"
+#SentryProvider:         "sentry"
+#AzureEventHubProvider:  "azureeventhub"
+#TelegramProvider:       "telegram"
+#LarkProvider:           "lark"
+#Matrix:                 "matrix"
+#OpsgenieProvider:       "opsgenie"
+#AlertManagerProvider:   "alertmanager"
 
 // ProviderStatus defines the observed state of Provider
 #ProviderStatus: {

@@ -30,7 +30,7 @@ import (
 // Artifact for a Git repository.
 #GitRepositorySpec: {
 	// URL specifies the Git repository URL, it can be an HTTP/S or SSH address.
-	// +kubebuilder:validation:Pattern="^(http|https|ssh)://"
+	// +kubebuilder:validation:Pattern="^(http|https|ssh)://.*$"
 	// +required
 	url: string @go(URL)
 
@@ -38,7 +38,7 @@ import (
 	// the GitRepository.
 	// For HTTPS repositories the Secret must contain 'username' and 'password'
 	// fields.
-	// For SSH repositories the Secret must contain 'identity', 'identity.pub'
+	// For SSH repositories the Secret must contain 'identity'
 	// and 'known_hosts' fields.
 	// +optional
 	secretRef?: null | meta.#LocalObjectReference @go(SecretRef,*meta.LocalObjectReference)
@@ -178,6 +178,18 @@ import (
 	// Artifacts as instructed by GitRepositorySpec.Include.
 	// +optional
 	includedArtifacts?: [...null | #Artifact] @go(IncludedArtifacts,[]*Artifact)
+
+	// ContentConfigChecksum is a checksum of all the configurations related to
+	// the content of the source artifact:
+	//  - .spec.ignore
+	//  - .spec.recurseSubmodules
+	//  - .spec.included and the checksum of the included artifacts
+	// observed in .status.observedGeneration version of the object. This can
+	// be used to determine if the content of the included repository has
+	// changed.
+	// It has the format of `<algo>:<checksum>`, for example: `sha256:<checksum>`.
+	// +optional
+	contentConfigChecksum?: string @go(ContentConfigChecksum)
 
 	meta.#ReconcileRequestStatus
 }

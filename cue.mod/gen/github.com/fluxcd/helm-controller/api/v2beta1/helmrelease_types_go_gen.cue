@@ -151,8 +151,9 @@ import (
 
 // KubeConfig references a Kubernetes secret that contains a kubeconfig file.
 #KubeConfig: {
-	// SecretRef holds the name to a secret that contains a 'value' key with
-	// the kubeconfig file as the value. It must be in the same namespace as
+	// SecretRef holds the name to a secret that contains a key with
+	// the kubeconfig file as the value. If no key is specified the key will
+	// default to 'value'. The secret must be in the same namespace as
 	// the HelmRelease.
 	// It is recommended that the kubeconfig is self-contained, and the secret
 	// is regularly updated if credentials such as a cloud-access-token expire.
@@ -160,7 +161,7 @@ import (
 	// binaries and credentials to the Pod that is responsible for reconciling
 	// the HelmRelease.
 	// +required
-	secretRef?: meta.#LocalObjectReference @go(SecretRef)
+	secretRef?: meta.#SecretKeyReference @go(SecretRef)
 }
 
 // HelmChartTemplate defines the template from which the controller will

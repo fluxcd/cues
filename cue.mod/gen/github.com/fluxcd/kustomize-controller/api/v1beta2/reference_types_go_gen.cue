@@ -12,7 +12,7 @@ package v1beta2
 	apiVersion?: string @go(APIVersion)
 
 	// Kind of the referent.
-	// +kubebuilder:validation:Enum=GitRepository;Bucket
+	// +kubebuilder:validation:Enum=OCIRepository;GitRepository;Bucket
 	// +required
 	kind: string @go(Kind)
 

@@ -22,6 +22,11 @@ import (
 	// Specification of the desired behavior for this NetworkPolicy.
 	// +optional
 	spec?: #NetworkPolicySpec @go(Spec) @protobuf(2,bytes,opt)
+
+	// Status is the current state of the NetworkPolicy.
+	// More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
+	// +optional
+	status?: #NetworkPolicyStatus @go(Status) @protobuf(3,bytes,opt)
 }
 
 // PolicyType string describes the NetworkPolicy type
@@ -142,8 +147,6 @@ import (
 	// should be allowed by the policy. This field cannot be defined if the port field
 	// is not defined or if the port field is defined as a named (string) port.
 	// The endPort must be equal or greater than port.
-	// This feature is in Beta state and is enabled by default.
-	// It can be disabled using the Feature Gate "NetworkPolicyEndPort".
 	// +optional
 	endPort?: null | int32 @go(EndPort,*int32) @protobuf(3,bytes,opt)
 }
@@ -188,6 +191,52 @@ import (
 	// neither of the other fields can be.
 	// +optional
 	ipBlock?: null | #IPBlock @go(IPBlock,*IPBlock) @protobuf(3,bytes,rep)
+}
+
+// NetworkPolicyConditionType is the type for status conditions on
+// a NetworkPolicy. This type should be used with the
+// NetworkPolicyStatus.Conditions field.
+#NetworkPolicyConditionType: string // #enumNetworkPolicyConditionType
+
+#enumNetworkPolicyConditionType:
+	#NetworkPolicyConditionStatusAccepted |
+	#NetworkPolicyConditionStatusPartialFailure |
+	#NetworkPolicyConditionStatusFailure
+
+// NetworkPolicyConditionStatusAccepted represents status of a Network Policy that could be properly parsed by
+// the Network Policy provider and will be implemented in the cluster
+#NetworkPolicyConditionStatusAccepted: #NetworkPolicyConditionType & "Accepted"
+
+// NetworkPolicyConditionStatusPartialFailure represents status of a Network Policy that could be partially
+// parsed by the Network Policy provider and may not be completely implemented due to a lack of a feature or some
+// other condition
+#NetworkPolicyConditionStatusPartialFailure: #NetworkPolicyConditionType & "PartialFailure"
+
+// NetworkPolicyConditionStatusFailure represents status of a Network Policy that could not be parsed by the
+// Network Policy provider and will not be implemented in the cluster
+#NetworkPolicyConditionStatusFailure: #NetworkPolicyConditionType & "Failure"
+
+// NetworkPolicyConditionReason defines the set of reasons that explain why a
+// particular NetworkPolicy condition type has been raised.
+#NetworkPolicyConditionReason: string // #enumNetworkPolicyConditionReason
+
+#enumNetworkPolicyConditionReason:
+	#NetworkPolicyConditionReasonFeatureNotSupported
+
+// NetworkPolicyConditionReasonFeatureNotSupported represents a reason where the Network Policy may not have been
+// implemented in the cluster due to a lack of some feature not supported by the Network Policy provider
+#NetworkPolicyConditionReasonFeatureNotSupported: #NetworkPolicyConditionReason & "FeatureNotSupported"
+
+// NetworkPolicyStatus describe the current state of the NetworkPolicy.
+#NetworkPolicyStatus: {
+	// Conditions holds an array of metav1.Condition that describe the state of the NetworkPolicy.
+	// Current service state
+	// +optional
+	// +patchMergeKey=type
+	// +patchStrategy=merge
+	// +listType=map
+	// +listMapKey=type
+	conditions?: [...metav1.#Condition] @go(Conditions,[]metav1.Condition) @protobuf(1,bytes,rep)
 }
 
 // NetworkPolicyList is a list of NetworkPolicy objects.
@@ -241,16 +290,16 @@ import (
 
 // IngressSpec describes the Ingress the user wishes to exist.
 #IngressSpec: {
-	// IngressClassName is the name of the IngressClass cluster resource. The
-	// associated IngressClass defines which controller will implement the
-	// resource. This replaces the deprecated `kubernetes.io/ingress.class`
-	// annotation. For backwards compatibility, when that annotation is set, it
-	// must be given precedence over this field. The controller may emit a
-	// warning if the field and annotation have different values.
-	// Implementations of this API should ignore Ingresses without a class
-	// specified. An IngressClass resource may be marked as default, which can
-	// be used to set a default value for this field. For more information,
-	// refer to the IngressClass documentation.
+	// IngressClassName is the name of an IngressClass cluster resource. Ingress
+	// controller implementations use this field to know whether they should be
+	// serving this Ingress resource, by a transitive connection
+	// (controller -> IngressClass -> Ingress resource). Although the
+	// `kubernetes.io/ingress.class` annotation (simple constant name) was never
+	// formally defined, it was widely supported by Ingress controllers to create
+	// a direct binding between Ingress controller and Ingress resources. Newly
+	// created Ingress resources should prefer using the field. However, even
+	// though the annotation is officially deprecated, for backwards compatibility
+	// reasons, ingress controllers should still honor that annotation if present.
 	// +optional
 	ingressClassName?: null | string @go(IngressClassName,*string) @protobuf(4,bytes,opt)
 
@@ -499,7 +548,7 @@ import (
 // referenced Parameters resource is namespace-scoped.
 #IngressClassParametersReferenceScopeNamespace: "Namespace"
 
-// IngressClassParametersReferenceScopeNamespace indicates that the
+// IngressClassParametersReferenceScopeCluster indicates that the
 // referenced Parameters resource is cluster-scoped.
 #IngressClassParametersReferenceScopeCluster: "Cluster"
 
