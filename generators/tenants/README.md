@@ -118,5 +118,5 @@ cue -t staging \
 The generated manifests can be pushed to the Git repository where you've run `flux bootstrap`.
 
 if you're using SOPS, you must configure Flux to
-[decrypt the secrets](https://fluxcd.io/docs/components/kustomize/kustomization/#secrets-decryption)
+[decrypt the secrets](https://fluxcd.io/flux/components/kustomize/kustomization/#secrets-decryption)
 in the bootstrapped repository.
