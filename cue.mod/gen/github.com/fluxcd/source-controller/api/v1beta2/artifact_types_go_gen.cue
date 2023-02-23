@@ -26,8 +26,14 @@ import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	revision: string @go(Revision)
 
 	// Checksum is the SHA256 checksum of the Artifact file.
+	// Deprecated: use Artifact.Digest instead.
 	// +optional
-	checksum: string @go(Checksum)
+	checksum?: string @go(Checksum)
+
+	// Digest is the digest of the file in the form of '<algorithm>:<checksum>'.
+	// +optional
+	// +kubebuilder:validation:Pattern="^[a-z0-9]+(?:[.+_-][a-z0-9]+)*:[a-zA-Z0-9=_-]+$"
+	digest?: string @go(Digest)
 
 	// LastUpdateTime is the timestamp corresponding to the last update of the
 	// Artifact.

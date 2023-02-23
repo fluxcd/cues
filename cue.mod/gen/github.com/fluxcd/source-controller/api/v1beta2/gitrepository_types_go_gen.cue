@@ -37,18 +37,22 @@ import (
 	// SecretRef specifies the Secret containing authentication credentials for
 	// the GitRepository.
 	// For HTTPS repositories the Secret must contain 'username' and 'password'
-	// fields.
+	// fields for basic auth or 'bearerToken' field for token auth.
 	// For SSH repositories the Secret must contain 'identity'
 	// and 'known_hosts' fields.
 	// +optional
 	secretRef?: null | meta.#LocalObjectReference @go(SecretRef,*meta.LocalObjectReference)
 
 	// Interval at which to check the GitRepository for updates.
+	// +kubebuilder:validation:Type=string
+	// +kubebuilder:validation:Pattern="^([0-9]+(\\.[0-9]+)?(ms|s|m|h))+$"
 	// +required
 	interval: metav1.#Duration @go(Interval)
 
 	// Timeout for Git operations like cloning, defaults to 60s.
 	// +kubebuilder:default="60s"
+	// +kubebuilder:validation:Type=string
+	// +kubebuilder:validation:Pattern="^([0-9]+(\\.[0-9]+)?(ms|s|m))+$"
 	// +optional
 	timeout?: null | metav1.#Duration @go(Timeout,*metav1.Duration)
 
@@ -75,6 +79,8 @@ import (
 
 	// GitImplementation specifies which Git client library implementation to
 	// use. Defaults to 'go-git', valid values are ('go-git', 'libgit2').
+	// Deprecated: gitImplementation is deprecated now that 'go-git' is the
+	// only supported implementation.
 	// +kubebuilder:validation:Enum=go-git;libgit2
 	// +kubebuilder:default:=go-git
 	// +optional
@@ -82,7 +88,6 @@ import (
 
 	// RecurseSubmodules enables the initialization of all submodules within
 	// the GitRepository as cloned from the URL, using their default settings.
-	// This option is available only when using the 'go-git' GitImplementation.
 	// +optional
 	recurseSubmodules?: bool @go(RecurseSubmodules)
 
@@ -118,9 +123,6 @@ import (
 // GitRepositoryRef specifies the Git reference to resolve and checkout.
 #GitRepositoryRef: {
 	// Branch to check out, defaults to 'master' if no other field is defined.
-	//
-	// When GitRepositorySpec.GitImplementation is set to 'go-git', a shallow
-	// clone of the specified branch is performed.
 	// +optional
 	branch?: string @go(Branch)
 
@@ -132,11 +134,17 @@ import (
 	// +optional
 	semver?: string @go(SemVer)
 
+	// Name of the reference to check out; takes precedence over Branch, Tag and SemVer.
+	//
+	// It must be a valid Git reference: https://git-scm.com/docs/git-check-ref-format#_description
+	// Examples: "refs/heads/main", "refs/tags/v0.1.0", "refs/pull/420/head", "refs/merge-requests/1/head"
+	// +optional
+	name?: string @go(Name)
+
 	// Commit SHA to check out, takes precedence over all reference fields.
 	//
-	// When GitRepositorySpec.GitImplementation is set to 'go-git', this can be
-	// combined with Branch to shallow clone the branch, in which the commit is
-	// expected to exist.
+	// This can be combined with Branch to shallow clone the branch, in which
+	// the commit is expected to exist.
 	// +optional
 	commit?: string @go(Commit)
 }
@@ -188,8 +196,26 @@ import (
 	// be used to determine if the content of the included repository has
 	// changed.
 	// It has the format of `<algo>:<checksum>`, for example: `sha256:<checksum>`.
+	//
+	// Deprecated: Replaced with explicit fields for observed artifact content
+	// config in the status.
 	// +optional
 	contentConfigChecksum?: string @go(ContentConfigChecksum)
+
+	// ObservedIgnore is the observed exclusion patterns used for constructing
+	// the source artifact.
+	// +optional
+	observedIgnore?: null | string @go(ObservedIgnore,*string)
+
+	// ObservedRecurseSubmodules is the observed resource submodules
+	// configuration used to produce the current Artifact.
+	// +optional
+	observedRecurseSubmodules?: bool @go(ObservedRecurseSubmodules)
+
+	// ObservedInclude is the observed list of GitRepository resources used to
+	// to produce the current Artifact.
+	// +optional
+	observedInclude?: [...#GitRepositoryInclude] @go(ObservedInclude,[]GitRepositoryInclude)
 
 	meta.#ReconcileRequestStatus
 }

@@ -55,6 +55,10 @@ package v1beta2
 // required fields, or the provided credentials do not match.
 #AuthenticationFailedReason: "AuthenticationFailed"
 
+// VerificationError signals that the Source's verification
+// check failed.
+#VerificationError: "VerificationError"
+
 // DirCreationFailedReason signals a failure caused by a directory creation
 // operation.
 #DirCreationFailedReason: "DirectoryCreationFailed"
