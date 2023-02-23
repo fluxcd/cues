@@ -30,6 +30,12 @@ import (
 // Managed Identity or Shared Key.
 #AzureOCIProvider: "azure"
 
+// OCILayerExtract defines the operation type for extracting the content from an OCI artifact layer.
+#OCILayerExtract: "extract"
+
+// OCILayerCopy defines the operation type for copying the content from an OCI artifact layer.
+#OCILayerCopy: "copy"
+
 // OCIRepositorySpec defines the desired state of OCIRepository
 #OCIRepositorySpec: {
 	// URL is a reference to an OCI artifact repository hosted
@@ -61,6 +67,12 @@ import (
 	// +optional
 	secretRef?: null | meta.#LocalObjectReference @go(SecretRef,*meta.LocalObjectReference)
 
+	// Verify contains the secret name containing the trusted public keys
+	// used to verify the signature and specifies which provider to use to check
+	// whether OCI image is authentic.
+	// +optional
+	verify?: null | #OCIRepositoryVerification @go(Verify,*OCIRepositoryVerification)
+
 	// ServiceAccountName is the name of the Kubernetes ServiceAccount used to authenticate
 	// the image pull if the service account has attached pull secrets. For more information:
 	// https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#add-imagepullsecrets-to-a-service-account
@@ -82,11 +94,15 @@ import (
 	certSecretRef?: null | meta.#LocalObjectReference @go(CertSecretRef,*meta.LocalObjectReference)
 
 	// The interval at which to check for image updates.
+	// +kubebuilder:validation:Type=string
+	// +kubebuilder:validation:Pattern="^([0-9]+(\\.[0-9]+)?(ms|s|m|h))+$"
 	// +required
 	interval: metav1.#Duration @go(Interval)
 
 	// The timeout for remote OCI Repository operations like pulling, defaults to 60s.
 	// +kubebuilder:default="60s"
+	// +kubebuilder:validation:Type=string
+	// +kubebuilder:validation:Pattern="^([0-9]+(\\.[0-9]+)?(ms|s|m))+$"
 	// +optional
 	timeout?: null | metav1.#Duration @go(Timeout,*metav1.Duration)
 
@@ -95,6 +111,10 @@ import (
 	// consult the documentation for your version to find out what those are.
 	// +optional
 	ignore?: null | string @go(Ignore,*string)
+
+	// Insecure allows connecting to a non-TLS HTTP container registry.
+	// +optional
+	insecure?: bool @go(Insecure)
 
 	// This flag tells the controller to suspend the reconciliation of this source.
 	// +optional
@@ -125,17 +145,27 @@ import (
 	// first layer matching this type is selected.
 	// +optional
 	mediaType?: string @go(MediaType)
+
+	// Operation specifies how the selected layer should be processed.
+	// By default, the layer compressed content is extracted to storage.
+	// When the operation is set to 'copy', the layer compressed content
+	// is persisted to storage as it is.
+	// +kubebuilder:validation:Enum=extract;copy
+	// +optional
+	operation?: string @go(Operation)
 }
 
 // OCIRepositoryVerification verifies the authenticity of an OCI Artifact
 #OCIRepositoryVerification: {
 	// Provider specifies the technology used to sign the OCI Artifact.
 	// +kubebuilder:validation:Enum=cosign
+	// +kubebuilder:default:=cosign
 	provider: string @go(Provider)
 
 	// SecretRef specifies the Kubernetes Secret containing the
 	// trusted public keys.
-	secretRef: meta.#LocalObjectReference @go(SecretRef)
+	// +optional
+	secretRef?: null | meta.#LocalObjectReference @go(SecretRef,*meta.LocalObjectReference)
 }
 
 // OCIRepositoryStatus defines the observed state of OCIRepository
@@ -155,6 +185,30 @@ import (
 	// Artifact represents the output of the last successful OCI Repository sync.
 	// +optional
 	artifact?: null | #Artifact @go(Artifact,*Artifact)
+
+	// ContentConfigChecksum is a checksum of all the configurations related to
+	// the content of the source artifact:
+	//  - .spec.ignore
+	//  - .spec.layerSelector
+	// observed in .status.observedGeneration version of the object. This can
+	// be used to determine if the content configuration has changed and the
+	// artifact needs to be rebuilt.
+	// It has the format of `<algo>:<checksum>`, for example: `sha256:<checksum>`.
+	//
+	// Deprecated: Replaced with explicit fields for observed artifact content
+	// config in the status.
+	// +optional
+	contentConfigChecksum?: string @go(ContentConfigChecksum)
+
+	// ObservedIgnore is the observed exclusion patterns used for constructing
+	// the source artifact.
+	// +optional
+	observedIgnore?: null | string @go(ObservedIgnore,*string)
+
+	// ObservedLayerSelector is the observed layer selector used for constructing
+	// the source artifact.
+	// +optional
+	observedLayerSelector?: null | #OCILayerSelector @go(ObservedLayerSelector,*OCILayerSelector)
 
 	meta.#ReconcileRequestStatus
 }

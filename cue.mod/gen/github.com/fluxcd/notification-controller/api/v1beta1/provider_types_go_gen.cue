@@ -5,8 +5,8 @@
 package v1beta1
 
 import (
-	"github.com/fluxcd/pkg/apis/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"github.com/fluxcd/pkg/apis/meta"
 )
 
 #ProviderKind: "Provider"
@@ -14,7 +14,7 @@ import (
 // ProviderSpec defines the desired state of Provider
 #ProviderSpec: {
 	// Type of provider
-	// +kubebuilder:validation:Enum=slack;discord;msteams;rocket;generic;github;gitlab;bitbucket;azuredevops;googlechat;webex;sentry;azureeventhub;telegram;lark;matrix;opsgenie;alertmanager;grafana;githubdispatch;
+	// +kubebuilder:validation:Enum=slack;discord;msteams;rocket;generic;generic-hmac;github;gitlab;bitbucket;azuredevops;googlechat;webex;sentry;azureeventhub;telegram;lark;matrix;opsgenie;alertmanager;grafana;githubdispatch;
 	// +required
 	type: string @go(Type)
 
@@ -31,6 +31,12 @@ import (
 	// +kubebuilder:validation:Optional
 	// +optional
 	address?: string @go(Address)
+
+	// Timeout for sending alerts to the provider.
+	// +kubebuilder:validation:Type=string
+	// +kubebuilder:validation:Pattern="^([0-9]+(\\.[0-9]+)?(ms|s|m))+$"
+	// +optional
+	timeout?: null | metav1.#Duration @go(Timeout,*metav1.Duration)
 
 	// HTTP/S address of the proxy
 	// +kubebuilder:validation:Pattern="^(http|https)://"
@@ -55,6 +61,7 @@ import (
 }
 
 #GenericProvider:        "generic"
+#GenericHMACProvider:    "generic-hmac"
 #SlackProvider:          "slack"
 #GrafanaProvider:        "grafana"
 #DiscordProvider:        "discord"

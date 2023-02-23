@@ -52,6 +52,8 @@ import (
 	chart: #HelmChartTemplate @go(Chart)
 
 	// Interval at which to reconcile the Helm release.
+	// +kubebuilder:validation:Type=string
+	// +kubebuilder:validation:Pattern="^([0-9]+(\\.[0-9]+)?(ms|s|m|h))+$"
 	// +required
 	interval: metav1.#Duration @go(Interval)
 
@@ -102,6 +104,8 @@ import (
 
 	// Timeout is the time to wait for any individual Kubernetes operation (like Jobs
 	// for hooks) during the performance of a Helm action. Defaults to '5m0s'.
+	// +kubebuilder:validation:Type=string
+	// +kubebuilder:validation:Pattern="^([0-9]+(\\.[0-9]+)?(ms|s|m|h))+$"
 	// +optional
 	timeout?: null | metav1.#Duration @go(Timeout,*metav1.Duration)
 
@@ -192,6 +196,8 @@ import (
 
 	// Interval at which to check the v1beta2.Source for updates. Defaults to
 	// 'HelmReleaseSpec.Interval'.
+	// +kubebuilder:validation:Type=string
+	// +kubebuilder:validation:Pattern="^([0-9]+(\\.[0-9]+)?(ms|s|m|h))+$"
 	// +optional
 	interval?: null | metav1.#Duration @go(Interval,*metav1.Duration)
 
@@ -218,6 +224,27 @@ import (
 	// +optional
 	// +deprecated
 	valuesFile?: string @go(ValuesFile)
+
+	// Verify contains the secret name containing the trusted public keys
+	// used to verify the signature and specifies which provider to use to check
+	// whether OCI image is authentic.
+	// This field is only supported for OCI sources.
+	// Chart dependencies, which are not bundled in the umbrella chart artifact, are not verified.
+	// +optional
+	verify?: null | #HelmChartTemplateVerification @go(Verify,*HelmChartTemplateVerification)
+}
+
+// HelmChartTemplateVerification verifies the authenticity of an OCI Helm chart.
+#HelmChartTemplateVerification: {
+	// Provider specifies the technology used to sign the OCI Helm chart.
+	// +kubebuilder:validation:Enum=cosign
+	// +kubebuilder:default:=cosign
+	provider: string @go(Provider)
+
+	// SecretRef specifies the Kubernetes Secret containing the
+	// trusted public keys.
+	// +optional
+	secretRef?: null | meta.#LocalObjectReference @go(SecretRef,*meta.LocalObjectReference)
 }
 
 // DeploymentAction defines a consistent interface for Install and Upgrade.
@@ -235,6 +262,8 @@ import (
 	// Timeout is the time to wait for any individual Kubernetes operation (like
 	// Jobs for hooks) during the performance of a Helm install action. Defaults to
 	// 'HelmReleaseSpec.Timeout'.
+	// +kubebuilder:validation:Type=string
+	// +kubebuilder:validation:Pattern="^([0-9]+(\\.[0-9]+)?(ms|s|m|h))+$"
 	// +optional
 	timeout?: null | metav1.#Duration @go(Timeout,*metav1.Duration)
 
@@ -350,6 +379,8 @@ import (
 	// Timeout is the time to wait for any individual Kubernetes operation (like
 	// Jobs for hooks) during the performance of a Helm upgrade action. Defaults to
 	// 'HelmReleaseSpec.Timeout'.
+	// +kubebuilder:validation:Type=string
+	// +kubebuilder:validation:Pattern="^([0-9]+(\\.[0-9]+)?(ms|s|m|h))+$"
 	// +optional
 	timeout?: null | metav1.#Duration @go(Timeout,*metav1.Duration)
 
@@ -463,6 +494,8 @@ import (
 
 	// Timeout is the time to wait for any individual Kubernetes operation during
 	// the performance of a Helm test action. Defaults to 'HelmReleaseSpec.Timeout'.
+	// +kubebuilder:validation:Type=string
+	// +kubebuilder:validation:Pattern="^([0-9]+(\\.[0-9]+)?(ms|s|m|h))+$"
 	// +optional
 	timeout?: null | metav1.#Duration @go(Timeout,*metav1.Duration)
 
@@ -479,6 +512,8 @@ import (
 	// Timeout is the time to wait for any individual Kubernetes operation (like
 	// Jobs for hooks) during the performance of a Helm rollback action. Defaults to
 	// 'HelmReleaseSpec.Timeout'.
+	// +kubebuilder:validation:Type=string
+	// +kubebuilder:validation:Pattern="^([0-9]+(\\.[0-9]+)?(ms|s|m|h))+$"
 	// +optional
 	timeout?: null | metav1.#Duration @go(Timeout,*metav1.Duration)
 
@@ -516,6 +551,8 @@ import (
 	// Timeout is the time to wait for any individual Kubernetes operation (like
 	// Jobs for hooks) during the performance of a Helm uninstall action. Defaults
 	// to 'HelmReleaseSpec.Timeout'.
+	// +kubebuilder:validation:Type=string
+	// +kubebuilder:validation:Pattern="^([0-9]+(\\.[0-9]+)?(ms|s|m|h))+$"
 	// +optional
 	timeout?: null | metav1.#Duration @go(Timeout,*metav1.Duration)
 

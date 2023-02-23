@@ -4,6 +4,8 @@
 
 package v1beta1
 
+#NotificationFinalizer: "finalizers.fluxcd.io"
+
 // InitializedReason represents the fact that a given resource has been initialized.
 #InitializedReason: "Initialized"
 

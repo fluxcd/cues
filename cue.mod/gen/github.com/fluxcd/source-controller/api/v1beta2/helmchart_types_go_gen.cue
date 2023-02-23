@@ -30,6 +30,8 @@ import (
 	sourceRef: #LocalHelmChartSourceReference @go(SourceRef)
 
 	// Interval is the interval at which to check the Source for updates.
+	// +kubebuilder:validation:Type=string
+	// +kubebuilder:validation:Pattern="^([0-9]+(\\.[0-9]+)?(ms|s|m|h))+$"
 	// +required
 	interval: metav1.#Duration @go(Interval)
 
@@ -68,6 +70,14 @@ import (
 	// NOTE: Not implemented, provisional as of https://github.com/fluxcd/flux2/pull/2092
 	// +optional
 	accessFrom?: null | acl.#AccessFrom @go(AccessFrom,*acl.AccessFrom)
+
+	// Verify contains the secret name containing the trusted public keys
+	// used to verify the signature and specifies which provider to use to check
+	// whether OCI image is authentic.
+	// This field is only supported when using HelmRepository source with spec.type 'oci'.
+	// Chart dependencies, which are not bundled in the umbrella chart artifact, are not verified.
+	// +optional
+	verify?: null | #OCIRepositoryVerification @go(Verify,*OCIRepositoryVerification)
 }
 
 // ReconcileStrategyChartVersion reconciles when the version of the Helm chart is different.

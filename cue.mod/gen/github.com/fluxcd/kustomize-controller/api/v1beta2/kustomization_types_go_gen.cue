@@ -14,6 +14,7 @@ import (
 #KustomizationKind:         "Kustomization"
 #KustomizationFinalizer:    "finalizers.fluxcd.io"
 #MaxConditionMessageLength: 20000
+#EnabledValue:              "enabled"
 #DisabledValue:             "disabled"
 #MergeValue:                "merge"
 
@@ -30,12 +31,16 @@ import (
 	decryption?: null | #Decryption @go(Decryption,*Decryption)
 
 	// The interval at which to reconcile the Kustomization.
+	// +kubebuilder:validation:Type=string
+	// +kubebuilder:validation:Pattern="^([0-9]+(\\.[0-9]+)?(ms|s|m|h))+$"
 	// +required
 	interval: metav1.#Duration @go(Interval)
 
 	// The interval at which to retry a previously failed reconciliation.
 	// When not specified, the controller uses the KustomizationSpec.Interval
 	// value to retry failures.
+	// +kubebuilder:validation:Type=string
+	// +kubebuilder:validation:Pattern="^([0-9]+(\\.[0-9]+)?(ms|s|m|h))+$"
 	// +optional
 	retryInterval?: null | metav1.#Duration @go(RetryInterval,*metav1.Duration)
 
@@ -47,7 +52,7 @@ import (
 	// a controller level fallback for when KustomizationSpec.ServiceAccountName
 	// is empty.
 	// +optional
-	kubeConfig?: null | #KubeConfig @go(KubeConfig,*KubeConfig)
+	kubeConfig?: null | meta.#KubeConfigReference @go(KubeConfig,*meta.KubeConfigReference)
 
 	// Path to the directory containing the kustomization.yaml file, or the
 	// set of plain YAMLs a kustomization.yaml should be generated for.
@@ -113,6 +118,8 @@ import (
 
 	// Timeout for validation, apply and health checking operations.
 	// Defaults to 'Interval' duration.
+	// +kubebuilder:validation:Type=string
+	// +kubebuilder:validation:Pattern="^([0-9]+(\\.[0-9]+)?(ms|s|m|h))+$"
 	// +optional
 	timeout?: null | metav1.#Duration @go(Timeout,*metav1.Duration)
 
@@ -131,6 +138,10 @@ import (
 	// +kubebuilder:validation:Enum=none;client;server
 	// +optional
 	validation?: string @go(Validation)
+
+	// Components specifies relative paths to specifications of other Components
+	// +optional
+	components?: [...string] @go(Components,[]string)
 }
 
 // Decryption defines how decryption is handled for Kubernetes manifests.
@@ -143,21 +154,6 @@ import (
 	// The secret name containing the private OpenPGP keys used for decryption.
 	// +optional
 	secretRef?: null | meta.#LocalObjectReference @go(SecretRef,*meta.LocalObjectReference)
-}
-
-// KubeConfig references a Kubernetes secret that contains a kubeconfig file.
-#KubeConfig: {
-	// SecretRef holds the name of a secret that contains a key with
-	// the kubeconfig file as the value. If no key is set, the key will default
-	// to 'value'. The secret must be in the same namespace as
-	// the Kustomization.
-	// It is recommended that the kubeconfig is self-contained, and the secret
-	// is regularly updated if credentials such as a cloud-access-token expire.
-	// Cloud specific `cmd-path` auth helpers will not function without adding
-	// binaries and credentials to the Pod that is responsible for reconciling
-	// the Kustomization.
-	// +required
-	secretRef?: meta.#SecretKeyReference @go(SecretRef)
 }
 
 // PostBuild describes which actions to perform on the YAML manifest

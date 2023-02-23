@@ -62,11 +62,15 @@ import (
 	secretRef?: null | meta.#LocalObjectReference @go(SecretRef,*meta.LocalObjectReference)
 
 	// Interval at which to check the Endpoint for updates.
+	// +kubebuilder:validation:Type=string
+	// +kubebuilder:validation:Pattern="^([0-9]+(\\.[0-9]+)?(ms|s|m|h))+$"
 	// +required
 	interval: metav1.#Duration @go(Interval)
 
 	// Timeout for fetch operations, defaults to 60s.
 	// +kubebuilder:default="60s"
+	// +kubebuilder:validation:Type=string
+	// +kubebuilder:validation:Pattern="^([0-9]+(\\.[0-9]+)?(ms|s|m))+$"
 	// +optional
 	timeout?: null | metav1.#Duration @go(Timeout,*metav1.Duration)
 
@@ -107,6 +111,11 @@ import (
 	// Artifact represents the last successful Bucket reconciliation.
 	// +optional
 	artifact?: null | #Artifact @go(Artifact,*Artifact)
+
+	// ObservedIgnore is the observed exclusion patterns used for constructing
+	// the source artifact.
+	// +optional
+	observedIgnore?: null | string @go(ObservedIgnore,*string)
 
 	meta.#ReconcileRequestStatus
 }

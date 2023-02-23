@@ -3,6 +3,6 @@
 //cue:generate cue get go github.com/fluxcd/image-reflector-controller/api/v1beta1
 
 // Package v1beta1 contains API Schema definitions for the image v1beta1 API group
-//+kubebuilder:object:generate=true
-//+groupName=image.toolkit.fluxcd.io
+// +kubebuilder:object:generate=true
+// +groupName=image.toolkit.fluxcd.io
 package v1beta1

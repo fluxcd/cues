@@ -52,6 +52,28 @@ package meta
 // example because a resource has been suspended, or a dependency is.
 #SuspendedReason: "Suspended"
 
+// ProgressingWithRetryReason represents the fact that
+// the reconciliation encountered an error that will be retried.
+#ProgressingWithRetryReason: "ProgressingWithRetry"
+
+// DependencyNotReadyReason represents the fact that
+// one of the dependencies is not ready.
+#DependencyNotReadyReason: "DependencyNotReady"
+
+// InvalidPathReason signals a failure caused by an invalid path.
+#InvalidPathReason: "InvalidPath"
+
+// InvalidURLReason signals a failure caused by an invalid URL.
+#InvalidURLReason: "InvalidURL"
+
+// InsecureConnectionsDisallowedReason signals a failure caused by
+// the use of insecure HTTP connections.
+#InsecureConnectionsDisallowedReason: "InsecureConnectionsDisallowed"
+
+// UnsupportedConnectionTypeReason signals a failure caused by
+// the use of unsupported network protocols.
+#UnsupportedConnectionTypeReason: "UnsupportedConnectionType"
+
 // ObjectWithConditions describes a Kubernetes resource object with status conditions.
 // +k8s:deepcopy-gen=false
 #ObjectWithConditions: _

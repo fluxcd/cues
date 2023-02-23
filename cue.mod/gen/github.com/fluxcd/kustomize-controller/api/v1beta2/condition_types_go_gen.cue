@@ -35,3 +35,7 @@ package v1beta2
 // ReconciliationFailedReason represents the fact that
 // the reconciliation failed.
 #ReconciliationFailedReason: "ReconciliationFailed"
+
+// ProgressingWithRetryReason represents the fact that
+// the reconciliation encountered an error that will be retried.
+#ProgressingWithRetryReason: "ProgressingWithRetry"

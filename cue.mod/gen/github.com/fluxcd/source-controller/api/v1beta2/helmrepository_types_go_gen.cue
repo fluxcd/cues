@@ -37,7 +37,7 @@ import (
 	// For HTTP/S basic auth the secret must contain 'username' and 'password'
 	// fields.
 	// For TLS the secret must contain a 'certFile' and 'keyFile', and/or
-	// 'caCert' fields.
+	// 'caFile' fields.
 	// +optional
 	secretRef?: null | meta.#LocalObjectReference @go(SecretRef,*meta.LocalObjectReference)
 
@@ -51,6 +51,8 @@ import (
 	passCredentials?: bool @go(PassCredentials)
 
 	// Interval at which to check the URL for updates.
+	// +kubebuilder:validation:Type=string
+	// +kubebuilder:validation:Pattern="^([0-9]+(\\.[0-9]+)?(ms|s|m|h))+$"
 	// +required
 	interval: metav1.#Duration @go(Interval)
 
@@ -58,6 +60,8 @@ import (
 	// and for remote OCI Repository operations like pulling for an OCI helm repository.
 	// Its default value is 60s.
 	// +kubebuilder:default:="60s"
+	// +kubebuilder:validation:Type=string
+	// +kubebuilder:validation:Pattern="^([0-9]+(\\.[0-9]+)?(ms|s|m))+$"
 	// +optional
 	timeout?: null | metav1.#Duration @go(Timeout,*metav1.Duration)
 
