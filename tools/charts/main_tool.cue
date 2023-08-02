@@ -13,6 +13,7 @@ import (
 
 vars: {
 	top:       *5 | string                    @tag(top)
+	interval:  *"10m" | string                @tag(interval)
 	namespace: *"flux-system" | string        @tag(namespace)
 	out:       *"yaml" | "list|yaml" | string @tag(out)
 }
@@ -34,7 +35,7 @@ command: fetch: {
 				metadata: namespace: vars.namespace
 				spec: {
 					url:      r.repository.url
-					interval: "10m"
+					interval: vars.interval
 					timeout:  "1m"
 				}
 			}
@@ -44,7 +45,7 @@ command: fetch: {
 				metadata: name:      "\(r.name)-\(strings.Split(r.package_id, "-")[0])"
 				metadata: namespace: vars.namespace
 				spec: {
-					interval: "10m"
+					interval: vars.interval
 					chart:    r.name
 					version:  "*"
 					sourceRef: {
